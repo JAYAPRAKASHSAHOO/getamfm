@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="approvalDetailsPage" class="custScrolling">
+        <script type="text/javascript">
+            $("#approvalDetailsPage").on("pageinit", function () {
+
+            });
+
+            $("#approvalDetailsPage").on("pagecreate", function () {
+                try {
+                    BindFormPopups(this.id);
+                }
+                catch (e) {
+                    //log(e);
+                }
+            });
+
+            $("#approvalDetailsPage").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('approvalDetailsPage', LoadAdditionalFormTranslations(this.id));
+            });
+
+            $("#approvalDetailsPage").on("pageshow", function () {
+                updateBreadcrumb(this.id);
+                if (navigator.onLine) {
+                    showLoading();
+                    GetPreApprovalOrderDetails();
+                }
+
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconAprDetails"); 
+
+                addPanel();
+                CheckingPendingData();
+            });
+
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important;" data-tap-toggle="false">
+            <!--<a href="#" data-role="button" class="min-margin-top margin-left" data-icon="bars"
+                onclick="ShowMenuItems()" data-iconpos="notext">Menu</a>-->
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left min-margin-top margin-left">
+                <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext">
+                    Menu</a> <a id="WOVbackButton" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();"></a>
+            </div><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconAprDetails" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();" style="display: none"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <div style="font-weight: bold; text-align: center" class="page-heading">
+                <span id="approvalDetailsHeading"></span>
+            </div>
+            <div data-role="collapsible-set" class="inspection-list data-list" id="approvalDetailsList">
+            </div>
+            <p style="margin-left: 2%;">
+                <img class="approveImage img-approve" id="detailsApproveImage" 
+                    data-approvaltype="" data-status="approve" data-workordernumber onclick="updateWOStatus(this);" />
+                <img class="rejectImage img-reject" id="detailsRejectImage"  data-approvaltype=""
+                    data-status="reject" data-workordernumber onclick="updateWOStatus(this);" />
+            </p>
+        </div>
+        <div data-role="popup" data-dismissible="false" id="workOrderApprovalStatusPopup"
+            data-overlay-theme="a" style="width: 300px" data-transition="pop">
+            <h4 style='text-align: center' id="workOrderApprovalStatusHeader">
+            </h4>
+            <div style='text-align: center' id="WOApprovalStatusMessage">
+            </div>
+            <a href="#" onclick="navigateToApprovalDashboard();" class="primary-button" data-role="button"
+                style="margin: 1%" id="WOApprovalStatusDecisionButton"></a>
+        </div>
+        <div data-role="popup" id="RejectionReasonDiv" data-dismissible="false" data-overlay-theme="a"
+            data-position-to="window" data-close-btn="none" class="ui-content" data-transition="pop">
+            <div>
+                <label id="ResonForRejectionLabel">
+                </label>
+                <div id = "rejectionReasonDropDownDiv" style="max-width: 277px; overflow: hidden;">
+                    <select id="ReasonForRejectionDropDown" onchange="SaveButtonEnable(0);"></select>
+                </div>
+                <label id="ResonForRejectionComment"></label>
+                <span>[</span><span id="AddCommentCharLimitNos" style="font-weight: bold;">500</span> <span id = "AvailableCharacters">Available characters</span>]
+                <textarea name="textarea" id="ResonForRejectionTextBox"  maxlength="500" onkeydown="commentsApproveRejectLimit(500)" onkeyup="SaveButtonEnable(500);"></textarea>
+            </div>
+            <div class="button-panel">
+                <div class="float-right">
+                    <a href="#" id="SubmitButton" class="primary-button" data-role="button" data-inline="true"
+                        onclick="SavereasonForRejectionFromPopUp()"></a> <a id="CloseButton" href="#" data-role="button"
+                            class="secondary-button" data-rel="back" data-inline="true" onclick="ClearRejection()"></a>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="hiddenRejectReason" name="hiddenRejectReason" />
+        <input type="hidden" id="hiddenWorkOrderNumber" name="hiddenWorkOrderNumber" />
+        <input type="hidden" id="hiddenStatus" name="hiddenStatus" />
+        <input type="hidden" id="hiddenApprovalType" name="hiddenApprovalType" />
+    </div>
+</body>
+</html>

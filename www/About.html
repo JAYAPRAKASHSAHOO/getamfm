@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>About</title>
+</head>
+<body>
+    <div data-role="page" id="AboutPage" class="custScrolling">
+        <script type="text/javascript">
+            $('#AboutPage').on("pagecreate", function () {
+                panelBinding("AboutPage");
+                BindAutoSyncPopup("AboutPage");               
+                BindTagScanPopup("AboutPage");                
+            });
+
+            $("#AboutPage").on("pageinit", function () {
+
+            });
+
+            $("#AboutPage").on("pagebeforeshow", function () {
+                LoadTranslation('AboutPage', null);
+                hideShowSync();
+            });
+
+            $('#AboutPage').on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconAbout");
+                                
+                updateBreadcrumb(this.id, true);
+                addPanel();
+                CheckingPendingData();
+            });
+
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext" class="ui-btn-left">
+                Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a><span class="ui-title"> </span>
+            <a href="#" data-role="button" id = "settingsIconAbout" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();" style="display: none"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+        </div>
+        <div data-role="content" class="content-container">
+            <p id="AboutPageTitle" class="page-heading">
+                About</p>
+            <div>
+                <div data-role="fieldcontain">
+                    <label id="AboutCompanyNameLabel">
+                    </label>
+                    <!-- <label id="editGroupValueLabel">
+            </label>-->
+                </div>
+                <div data-role="fieldcontain">
+                    <label id="AboutDBVersionLabel">
+                        DB Version:
+                    </label>
+                    <label id="AboutDBVersionValueLabel">
+                    </label>
+                </div>
+                <div data-role="fieldcontain">
+                    <label id="AboutDeployedLabel">
+                        Deployed Date:
+                    </label>
+                    <label id="AboutDeployedValueLabel">
+                    </label>
+                </div>
+                <div data-role="fieldcontain">
+                    <label id="AboutContactLabel">
+                        Contact:
+                    </label>
+                    <label id="AboutContactValueLabel">
+                    </label>
+                </div>
+                <div data-role="fieldcontain">
+                    <label id="AboutBuildVersionLabel">
+                        Contact:
+                    </label>
+                    <label id="AboutBuildVersionValueLabel">
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

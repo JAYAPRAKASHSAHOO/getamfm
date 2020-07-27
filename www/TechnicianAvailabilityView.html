@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="TechnicianAvailabilityView" class="custScrolling">
+        <script type="text/javascript">
+            $("#TechnicianAvailabilityView").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('TechnicianAvailabilityView', null);
+                var logOutLabel = GetTranslatedValue("LogOutLabel");
+                var pageID = "#" + $.mobile.activePage.attr('id');
+                $(pageID).find("#TechAvailableLogoutButton .ui-btn-text").text(logOutLabel);
+                $(pageID).find('#pageHeading span').html(GetTranslatedValue("TechnicianAvailability"));
+                $(pageID).find('#techListMoreButton').text(GetTranslatedValue("More"));
+                $(pageID).find('#techListMoreButton').hide();
+            });
+
+            $("#TechnicianAvailabilityView").on("pageinit", function () {
+            });
+
+            $("#TechnicianAvailabilityView").on("pagecreate", function () {
+                try {
+                    BindFormPopups(this.id);
+                }
+                catch (e) {
+                }
+            });
+
+            $("#TechnicianAvailabilityView").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconTechView");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                $('#noTechnicians').hide();
+                getAvailableTechnician();
+            });
+        </script>
+        <div data-role="header" data-position="fixed" class="page-header" style="top: 0px!important;" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="ui-btn-left min-margin-top margin-left">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();">back</a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button"
+                data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left">
+                Scan</a>
+            <a href="#" data-role="button" id = "settingsIconTechView" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p class="page-heading" id="pageHeading">
+                <span id="PageTitle"></span>
+            </p>
+            <ul data-inset="true" data-role="listview" id="noTechnicians" style="display: none"
+                class="NoOrders">
+                <li class="no-records" id="NoRecords"></li>
+            </ul>
+            <div id="technicianAvailabilityListDiv" data-role="collapsible-set" data-inset="false"
+                class="data-list">
+            </div>
+        </div>
+        <div class="button-panel">
+            <div class="float-right">
+                <a id="techListMoreButton" href="#" class="primary-button" onclick="javascript:GetNextTechList(this)"
+                    data-role="button" data-theme="b" data-nextpage='1'>More</a></div>
+            <label id="noTechFound">
+            </label>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="approvalLogPage" class="custScrolling">
+        <script type="text/javascript">
+            $("#approvalLogPage").on("pageinit", function () {
+                $("#ApprovallogNextButton").hide();
+                $('#NoApprovalLogDiv').hide();
+                if (navigator.onLine) {
+                    setLocal('ApprovalCodeType', getLocal('ApprovalLogStartsWith'));
+                    switch (getLocal('ApprovalLogStartsWith')) {
+                        case 'PreApproval':
+                            $('#PreApprovalLink a').addClass('ui-btn-active');
+                            break;
+                        case 'InvoiceApproval':
+                            $('#InvoiceApprovalLink a').addClass('ui-btn-active');
+                            break;
+                        case 'NTEApproval':
+                            $('#NTEApprovalLink a').addClass('ui-btn-active');
+                            break;
+                        default: break;
+                    }
+
+                    GetLogType();
+                }
+            });
+
+            $("#approvalLogPage").on("pagecreate", function () {
+                try {
+                    BindFormPopups(this.id);
+                }
+                catch (e) {
+                    //log(e);
+                }
+            });
+
+            $("#approvalLogPage").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('approvalLogPage', null);
+
+                $("#ApprovalLogWONum").html(GetTranslatedValue("ApprovalLogWONum") + " " + getLocal("WorkOrderNumber"));
+
+                var chainText = GetTranslatedValue("ToggleSwitchChainText")
+                var logText = GetTranslatedValue("ToggleSwitchLogText")
+                $(".ui-slider-label-a").text(logText);
+                $(".ui-slider-label-b").text(chainText);
+                $("#approvalLogPage").find("#LogType").slider("refresh", true);
+
+            });
+
+            $("#approvalLogPage").on("pageshow", function () {
+                updateBreadcrumb(this.id);
+                if (navigator.onLine) {
+                    //GetPreApprovalOrders();
+                }
+
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconAprLog");
+
+                addPanel();
+                CheckingPendingData();
+            });
+
+            $("#approvalLogPage").on("pagehide", function () {
+                localStorage.removeItem('ApprovalCodeType');
+                localStorage.removeItem('ChainNumber');
+            });
+
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left min-margin-top margin-left">
+                <!--javascript:ShowMenuItems()-->
+                <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext">
+                    Menu</a> <a id="logBackButton" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();"></a>
+            </div><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconAprLog" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();" style="display: none"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p id="ApprovalLogWONum" class="page-heading">
+            </p>
+            <div data-role="navbar" id="ApprovalLogLinksDiv">
+                <ul class="ui-grid-b">
+                    <li onclick="ApprovalLinkButtonChangedEvent(this)" id="PreApprovalLink" class="ui-block-b">
+                        <a data-corners="false" data-shadow="false" data-theme="a" data-inline="true" class="ui-btn ui-btn-inline ui-btn-up-a"
+                            name="PreApprovalAnchorTag">
+                            <img class="tabicon img-mytask" /><span id="approvalLogPreApprovalIconText"></span></a></li>
+                    <li onclick="ApprovalLinkButtonChangedEvent(this)" id="NTEApprovalLink" class="ui-block-d">
+                        <a data-corners="false" data-shadow="false" data-theme="a" data-inline="true" class="ui-btn ui-btn-inline ui-btn-up-a"
+                            name="NteApprovalAnchorTag">
+                            <img class="tabicon img-payment" /><span id="approvalLogNteIconText"></span></a></li>
+                    <li onclick="ApprovalLinkButtonChangedEvent(this)" id="InvoiceApprovalLink" class="ui-block-c">
+                        <a data-corners="false" data-shadow="false" data-theme="a" data-inline="true" class="ui-btn ui-btn-inline ui-btn-up-a"
+                            name="InvoiceApprovalAnchorTag">
+                            <img class="tabicon img-atask" /><span id="approvalLogInvoiceApprovalIconText">
+                            </span></a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a">
+                        <div data-role="fieldcontain" id="LogTypeDiv">
+                            <select name="slider" id="LogType" data-role="slider" onchange="ResetPageNumber();GetLogType()">
+                                <option value="Chain"></option>
+                                <option value="Log"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ui-block-b" id="NTEChainDiv">
+                        <select id="NTEChain" onchange="GetSelectedChainNumber()">
+                        </select>
+                    </div>
+                </div>
+                <ul data-role="listview" data-inset="true" class="no-shadow" id="NoApprovalLogDiv">
+                    <li class="no-records" id="NoDataLi"></li>
+                </ul>
+            </div>
+            <div id="ApprovalLogDiv">
+                <ul data-role="listview" id="ApprovalLogList" class="log-list" data-inset="false"
+                    data-divider-theme="b">
+                </ul>
+            </div>
+            <div class="button-panel">
+                <div class="float-right">
+                    <a href="#" id="ApprovallogNextButton" class="primary-button" onclick="javascript:ApprovalGetNextList(this);"
+                        data-role="button" data-nextpage='1'>More</a>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

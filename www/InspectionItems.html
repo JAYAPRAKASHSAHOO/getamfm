@@ -1,0 +1,98 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="inspectionItemsPage" class="custScrolling">
+        <style>
+            a .createWO .ui-icon
+            {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .ui-icon-custom
+            {
+                background-position: 13px -3px;
+                background-size: 70%;
+                width: 32px;
+                height: 32px;
+                background-color: #2F3E46 !important;
+            }
+        </style>
+        <script type="text/javascript">
+            $("#inspectionItemsPage").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#inspectionItemsPage").on("pagebeforeshow", function () {
+                $("#divisionDescriptionItems").html(getLocal("DivisionDescription"));
+                hideShowSync();
+            });
+
+            $("#inspectionItemsPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspItems");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                LoadTranslation('inspectionItemsPage', null);
+                setLocal("InspectionPageName", "InspectionEditItem");
+                if (navigator.onLine) {
+                    showLoading();
+                    var data = iMFMJsonObject({
+                        "RegionNumber": getLocal("RegionNumber"),
+                        "DivisionNumber": getLocal("DivisionNumber"),
+                        "Username": decryptStr(getLocal("Username")),
+                        "InspectionNumber": getLocal("InspectionNumber"),
+                        "AreaID": getLocal("AreaId"),
+                        "CategoryID": getLocal("CategoryId"),
+                        "AreaDescription": getLocal("AreaName")                        
+                    });
+                    var inspectionURL = standardAddress + "Inspection.ashx?methodname=GetInspectionItems";
+                    InspectionItemsSuccess(inspectionURL, data);
+                }
+                CheckingPendingData();
+            });                               
+        </script>
+
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important;" data-tap-toggle="false">
+            <a href="javascript:ShowMenuItems()" data-role="button" class="min-margin-top margin-left ui-btn-left"
+                data-icon="bars" data-iconpos="notext">Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+                <a href="#" data-role="button" id = "settingsIconInspItems" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <div class="bread-crumb">
+                <a href="#" onclick="NavigateBackToArea();" id="itemsAreaName" class="breadCrumbLink">
+                </a><a href="#" onclick="NavigateBackToCategory();" id="itemsCategName" class="breadCrumbLink">
+                </a>
+            </div>
+            <p id="divisionDescriptionItems" class="page-heading">
+            </p>
+            <div class="inspection-content">
+                <ul data-role="listview" class="inspection-content-list" data-inset="true" id="dynamicItemslist">
+                </ul>
+            </div>
+            <div id="noItemsDiv">
+            </div>
+        </div>
+        <div data-role="popup" id="workOrderCreateOptionsPopUp" data-position-to="origin">
+            <ul data-role="listview" data-inset="true" style="min-width: 210px;" data-theme="d">
+                <li><a id="correctiveActionWO" href="#" onclick="NavigateToWorkOrder(this);">Create
+                    Corrective Action</a></li>
+                <li><a id="plannedExpenseWO" href="#" onclick="NavigateToWorkOrder(this);">Create Planned
+                    Expense</a></li>
+                <li><a id="displayWorkOrders" href="#" onclick="NavigateToWorkOrder(this);">View Work
+                    Orders</a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

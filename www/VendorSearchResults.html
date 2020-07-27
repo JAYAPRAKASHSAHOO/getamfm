@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="VendorSearchResults" class="custScrolling">
+        <script>
+            $("#VendorSearchResults").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('VendorSearchResults', null);
+            });
+
+            $("#VendorSearchResults").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconVendorRes");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                if (navigator.onLine) {
+                    showLoading();
+                    BindList();
+                }
+                else {
+                    ////showError("No network connection. Please try again when network is available.");
+                    showError(GetCommonTranslatedValue("NoNetworkCommon"));
+                }
+                CheckingPendingData();
+            });
+
+            $("#VendorSearchResults").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });                  
+              
+        </script>
+        <div data-role="header" data-position="fixed" style="top: 0px!important" class="page-header" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left margin-left min-margin-top">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-theme="a" data-icon="bars"
+                    data-iconpos="notext">Menu</a> <a onclick="navigateToPreviousPage();" data-theme="a"
+                        data-role="button" data-icon="arrow-l" data-iconpos="notext"></a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconVendorRes" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+        <div class="SyncNotification" style="text-align:right;"> 
+            <img class="img-sync" style="vertical-align: middle;"/>Syncing...
+        </div>
+            <p class="page-heading" id="ResultsHeadingLabel">
+                Vendor Search Results
+            </p>
+            
+            <ul data-role="listview" data-inset="true" id="NoVendors" class="no-shadow" style="display: none">
+                <li class="no-records" id="VendorNotFound" >Vendors not found</li>
+            </ul>
+            <div class="vendor-panel">
+            <ul data-role="listview" class="vendor-list" data-inset="true" id="VendorList">
+            </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

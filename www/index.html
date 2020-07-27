@@ -1,0 +1,320 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Login Page</title>
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
+        name='viewport' />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="CACHE-CONTROL" content="NO-CACHE" />  
+    <meta http-equiv="Pragma" content="no-cache" /> 
+    <!-- <link href="css/jquery.mobile-1.3.0.css" rel="stylesheet" /> -->
+    <link href="Styles/jquery.mobile-1.4.5.min.css" rel="stylesheet" type="text/css" />     
+    <link href="Styles/CommonStyle.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/CustomStyle.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/InspectionStyle.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/jquery.jqplot.css" rel="stylesheet" type="text/css" />
+    
+    <script src="js/System_js/System.js" type="text/javascript"></script>
+    <script src="js/System_js/System.IO.js" type="text/javascript"></script>
+    <script src="js/System_js/System.Text.js" type="text/javascript"></script>
+    <script src="js/System_js/System.Convert.js" type="text/javascript"></script>
+    <script src="js/System_js/System.BigInt.js" type="text/javascript"></script>
+    <script src="js/System_js/System.BitConverter.js" type="text/javascript"></script> 
+    
+    <script src="js/aes.js" type="text/javascript"></script>
+    <script src="cordova.js" type="text/javascript"></script>
+    <script src="cordova_plugins.js" type="text/javascript"></script>
+    <!-- <script src="js/jquery-1.9.1.min.js" type="text/javascript"></script> -->
+    <script src="js/jquery-1.12.4.min.js" type="text/javascript"></script>
+    <script src="js/jquery-ui.js" type="text/javascript"></script>
+    <script src="js/jquery.numeric.js" type="text/javascript"></script>
+    <!-- <script src="js/jquery.mobile-1.3.0.js" type="text/javascript"></script> -->
+    <script src="js/jquery.mobile-1.4.5.min.js" type="text/javascript"></script>
+    <script src="js/jquery.mobile-1.4.5.js" type="text/javascript"></script>
+       
+    <script src="js/moment.min.js" type="text/javascript"></script>
+    <script src="js/Globalize/globalize.cultures.js" type="text/javascript"></script>
+    <script src="js/Globalize/globalize.js" type="text/javascript"></script>
+    <script src="js/Constants.js" type="text/javascript"></script>
+    <script src="js/appDB.js" type="text/javascript"></script>
+    <script src="js/appUI.js" type="text/javascript"></script>
+    <script src="js/BlueJay.js" type="text/javascript"></script>
+    <script src="js/PushHandler.js" type="text/javascript"></script>
+    <script src="js/CreateWorkOrder.js" type="text/javascript"></script>
+    <script src="js/appJS/appBI.js" type="text/javascript"></script>
+    <script src="js/DashBoard.js" type="text/javascript"></script>
+    <script src="js/Attachment.js" type="text/javascript"></script>
+    <script src="js/LaborDetails.js" type="text/javascript"></script>
+    <script src="js/LoginScripts.js" type="text/javascript"></script>
+    <script src="js/LogpageScripts.js" type="text/javascript"></script>
+    <script src="js/PdaSearch.js" type="text/javascript"></script>
+    <script src="js/WorkOrderDetails.js" type="text/javascript"></script>
+    <script src="js/Globalize/globalize.js" type="text/javascript"></script>
+    <script src="js/Globalize/globalize.cultures.js" type="text/javascript"></script>
+    <script src="js/binding.js" type="text/javascript"></script>
+    <script src="js/appJS/ActionsPopup.js" type="text/javascript"></script>
+    <script src="js/appJS/actionToken.js" type="text/javascript"></script>
+    <script src="js/appJS/ActionPage.js" type="text/javascript"></script>
+    <script src="js/jquery.flotjs.js" type="text/javascript"></script>
+    <script src="js/jquery.flot.pie.js" type="text/javascript"></script>
+    <script src="js/highCharts.js" type="text/javascript"></script>
+    <script src="js/Synchronization.js" type="text/javascript"></script>
+    <script src="js/OfflineScripting.js" type="text/javascript"></script>
+    <script src="js/SecurityToken.js" type="text/javascript"></script>
+    <script src="js/TimeCard.js" type="text/javascript"></script>
+    <script src="js/inspectionAdhoc.js" type="text/javascript"></script>
+    <script src="js/Common_Functions.js" type="text/javascript"></script>
+    <script src="js/InspectionCapitalLog.js" type="text/javascript"></script>
+    <script src="js/OpenInspection.js" type="text/javascript"></script>
+    <script src="js/InspectionAreas.js" type="text/javascript"></script>
+    <script src="js/InspectionCategories.js" type="text/javascript"></script>
+    <script src="js/InspectionEditItem.js" type="text/javascript"></script>
+    <script src="js/InspectionPictures.js" type="text/javascript"></script>
+    <script src="js/InspectionItems.js" type="text/javascript"></script>
+    <script src="js/InspectionAddAsset.js" type="text/javascript"></script>
+    <script src="js/InspectionEditAsset.js" type="text/javascript"></script>
+    <script src="js/InspectionCapital.js" type="text/javascript"></script>
+    <script src="js/InspectionAssets.js" type="text/javascript"></script>
+    <script src="js/InspectionStatus.js" type="text/javascript"></script>
+    <script src="js/InspectionVendor.js" type="text/javascript"></script>
+    <script src="js/InspectionViewCapital.js" type="text/javascript"></script>
+    <script src="js/InspectionViewWorkOrders.js" type="text/javascript"></script>
+    <script src="js/TimeCard.js" type="text/javascript"></script>
+    <script src="js/TimeCardEntry.js" type="text/javascript"></script>
+    <script src="js/TimeCardNA.js" type="text/javascript"></script>
+    <script src="js/TimeCardSummary.js" type="text/javascript"></script>
+    <script src="js/TimeCardWO.js" type="text/javascript"></script>
+    <script src="js/Vendor.js" type="text/javascript"></script>
+    <script src="js/WorkOrdersView.js" type="text/javascript"></script>
+    <script src="js/InspectionAddWO.js" type="text/javascript"></script>
+    <script src="js/SearchOrder.js" type="text/javascript"></script>
+    <script src="js/MaterialPO.js" type="text/javascript"></script>
+    <script src="js/Exception.js" type="text/javascript"></script>
+    <script src="js/InitialSync.js" type="text/javascript"></script>
+    <script src="js/ChangePassword.js" type="text/javascript"></script>
+    <script src="js/jquery.jqplot.js" type="text/javascript"></script>
+    <script src="js/jqplot.barRenderer.js" type="text/javascript"></script>
+    <script src="js/jqplot.categoryAxisRenderer.js" type="text/javascript"></script>
+    <script src="js/Steps.js" type="text/javascript"></script>
+    <script src="js/ApprovalDashboard.js" type="text/javascript"></script>
+    <script src="js/ApprovalLog.js" type="text/javascript"></script>
+    <script src="js/jSignature.js" type="text/javascript"></script>
+    <script src="js/SiteProfile.js" type="text/javascript"></script>
+    <script src="js/TechnicianAvailability.js" type="text/javascript"></script>
+    <script src="js/ResolutionCode.js" type="text/javascript"></script>
+    <script src="js/NewInspectionItems.js" type="text/javascript"></script>
+    <script src="js/TagScanner.js" type="text/javascript"></script>
+   <!-- <script src="js/barcodescanner.js" type="text/javascript"></script>-->
+    <script src="js/Assets.js" type="text/javascript"></script>
+    <script src="js/Inventory.js" type="text/javascript"></script>
+    <script src="js/PushMethods.js" type="text/javascript"></script>
+    <script src="js/SecurityQuestionWindow.js" type="text/javascript"></script>
+    <script src="js/SecurityQuestionConfig.js" type="text/javascript"></script>
+
+</head>
+<body>
+    <div id="Login" data-role="page" class="custScrolling">
+        <script type="text/javascript">
+            var loginPage = $("#Login");
+            //LoadScreenTranslation();
+            // This will need to become .ready when upgrading jquery.
+            loginPage.on("ready", function () {
+                GetMyCurrentLocation();
+            });
+
+            loginPage.on("pageinit", function () {
+                // SyncTranslation("Login", LoadScreenTranslation);
+            });
+
+            loginPage.on("pagebeforeshow", function () {
+                // if (!IsStringNullOrEmpty(decryptStr(getLocal("Username")))) {
+                //     loginPage.find("#UserNameTextBox").val(decryptStr(getLocal("Username")));
+                // }
+            });
+
+            loginPage.on("pagecreate", function () {
+                try {
+                    LoadTranslation("Common", null);
+                    BinderrorPopup("Login");
+                    popupBinding("Login");
+                }
+                catch (e) {
+                    //log(e);
+                }
+            });
+
+            //// if any one of the condition fails need to sync.
+            loginPage.on("pageshow", function () {
+                $("#NeedHelpContainer").hide();
+                //SR Pentesting Fixed username is not populating after logout or 2nd time launch of the app
+                if (!IsStringNullOrEmpty(decryptStr(getLocal("Username")))) {
+                    setTimeout(function () {
+                        // SR Pentesting 
+                        loginPage.find("#UserNameTextBox").val(decryptStr(getLocal("Username")));
+                    }, 1000);
+                }
+                if (getLocal("SSOUser") == "true") {
+                    $.mobile.loading("show");
+                    setTimeout(function () {
+                        var diffDays = getSSODateDiff();
+                        if (diffDays >= parseInt(getLocal("dayDifference")) && !IsStringNullOrEmpty(decryptResponse(getLocal("SSOToken")))) {
+                            getSSOToken(getKeys);
+                        } else {
+                            // Removed being called twice.
+                            //getKeys();
+                        }
+                    }, 500);
+                }
+                else if (
+                        IsStringNullOrEmpty(getLocal("DatabaseID")) ||
+                        IsStringNullOrEmpty(getLocal("Language")) ||
+                        IsStringNullOrEmpty(getLocal("LanguageName")) ||
+                        IsStringNullOrEmpty(getLocal("SupportedLanguages")) ||
+                        IsStringNullOrEmpty(getLocal("XmlTranslation")) ||
+                        IsStringNullOrEmpty(getLocal("XmlLastSyncDate")) ||
+                        IsStringNullOrEmpty(getLocal("XmlLastSyncLanguage"))) {
+                    localStorage.removeItem("DatabaseID");
+                    localStorage.removeItem("SupportedLanguages");
+                    localStorage.removeItem("Language");
+                    localStorage.removeItem("LanguageName");
+                    //LoginSettings_OpenPopUp();
+                    // Added for pen test or JQM updated
+                    setTimeout(function () {
+                        LoginSettings_OpenPopUp();
+                    }, 1000);
+                    loginPage.find("#LoginSettingsPopUp").popup({ history: false });
+
+                    localStorage.removeItem("XmlTranslation");
+                    localStorage.removeItem("XmlLastSyncDate");
+                    localStorage.removeItem("XmlLastSyncLanguage");
+                }
+
+                //SR Pentesting by default hiding the loading indicator
+                if (getLocal("SSOUser") != "true") {
+                    setTimeout(function () {
+                        $.mobile.loading("hide");
+                    }, 1000);
+                }
+                LoadScreenTranslation();
+            });
+
+            function GetReadyForLogin() {
+                //loginPage.find("#EncryptedPassWordValue").val(CryptoJS.SHA512(loginPage.find("#PasswordTextBox").val()));
+                LogOnButtonClick();
+            }        
+        </script>
+
+        <div data-role="header" id="LoginHeader" class="login-header" style="top: 0px!important"
+            data-tap-toggle="false">
+            <h5>
+                <label id="LogOnHeaderLabel">
+                    :: PDA Log On ::</label>
+                <a href="#" data-role="button" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            </h5>
+        </div>
+        <div data-role="content">
+            <b>
+                <label id="SettingsLabel" name="SettingsLabel">
+                    Settings :
+                </label>
+                <label id="DataBaseNameValueLabel" name="DataBaseNameValueLabel">
+                    -Not Set-
+                </label>
+                <label id="SeparatorLabel" name="SeparatorLabel">
+                    &nbsp;/&nbsp;</label>
+                <label id="LanguageNameValueLabel" name="LanguageNameValueLabel">
+                    -Not Set-
+                </label>
+            </b>
+            <input type="text" id="UserNameTextBox" placeholder="User Name" name="UserNameTextBox" autocomplete="off"/>
+            <input type="password" id="PasswordTextBox" placeholder="Password" name="PasswordTextBox" />
+            <a data-role="button" id="LogOnButton" onclick="GetReadyForLogin();">Login</a>
+            <div style="text-align:center"><a id="ForgotPasswordLink" onclick="forgotPassword($('#UserNameTextBox'));">Forgot Password?</a></div>
+            <div style="text-align:center" id="NeedHelpContainer"><a id="NeedHelpLink" onclick="NeedHelpPopup();" ></a></div>
+            <input type="hidden" name="LatitudeHiddenFieldValue" id="LatitudeHiddenFieldValue" />
+            <input type="hidden" name="LongitudeHiddenFieldValue" id="LongitudeHiddenFieldValue" />
+            <input type="hidden" name="EncryptedPassWordValue" id="EncryptedPassWordValue" />
+        </div>
+        <div data-role="popup" id="LoginSettingsPopUp" data-transition="pop">
+            <div data-role="header" class="popup-Header">
+                <label id="LogOnPopUpHeaderLabel">
+                    Settings
+                </label>
+            </div>
+            <div data-role="content">
+                <input type="number" id="DataBaseName" name="DataBaseName" placeholder="Customer ID"
+                    min="100" max="999" onkeyup="LoginSettings_DatabaseNameChanged();" />
+                <select id="SupportedLanguagesDropDown" onchange="LoginSettings_SupportedLanguagesChanged();">
+                </select>
+                <label id="SettingsPopUpWaitLabel" style="display: none;">
+                    Please wait..
+                </label>
+                <label id="SettingsPopUpMessageLabel" style="display: none;">
+                </label>
+                <label id="SSOEnabledMessage" style="display: none;">
+                </label>
+                <br />
+                <a data-role="button" id="SaveButton" data-inline="true" data-theme="b" onclick="LoginSettings_SaveButtonClick();">
+                    Save</a> <a data-role="button" id="CancelButton" data-inline="true" data-theme="b"
+                        onclick="LoginSettings_CancelButtonClick();">Cancel</a>
+            </div>
+        </div>
+        <div data-role="popup" id="UpdateClientPopUp" data-transition="pop">
+            <div data-role="content">
+                <label id="SettingsPopUpWaitLabel">
+                    A new version of iMFM has been released. Please download to continue..
+                </label>
+                <br />
+                <a data-role="button" id="AppStoreLink" data-inline="true" data-theme="b" href="itms-apps://itunes.apple.com/app/iMFM/id710472063"
+                    style="left: 40%">Update</a> <a data-role="button" id="GooglePlayLink" data-inline="true"
+                        data-theme="b" onclick='javascript:window.open("market://details?id=com.mainstreamsasp.amfm", "_system");' style="left: 40%">
+                        Update</a>
+            </div>
+        </div>
+        <div data-role="popup" id="SecurityQuestionPopUp" data-transition="pop">
+            <div data-role="header" class="popup-Header">
+                <label id="ForgotPassword">
+                    Forgot Password
+                </label>
+            </div>
+            <div data-role="content">
+                <label id="ForgotPasswordHelpText2">
+                </label><br /><br />
+                <label id="ForgotPasswordHelpText3">
+                </label><br /><br />
+                <label id="QuestionLabel" class="security-question">
+                    This is a security question.
+                </label>
+                <br />
+                <input type="password" id="SecurityAnswerText" name="SecurityAnswerText" autocomplete="off" autocapitalize="none" class="security-answer" />
+                <div>
+                <label id="ErrorMessage" class="mandatory security-error"></label>
+                </div>
+                <a data-role="button" id="SecuritySubmitButton" class="security-submit" data-inline="true" data-theme="b">SUBMIT</a>
+                <a data-role="button" id="SecurityCancelButton" class="security-cancel" data-inline="true" data-theme="b" href="#">CANCEL</a>
+            </div>
+        </div>
+        
+         <div data-role="popup" id="LoginNeedHelpPopup" data-transition="pop">
+            <div data-role="content">
+                <label id="NeedHelpLabel">
+                    
+                </label>
+                <br />
+                 <a data-role="button" id="errorcloseBtn" data-inline="true"
+                        data-theme="b" onclick='javascript:CloseNeedHelpPopup();' >
+                        Ok</a>
+            </div>
+        </div>
+
+        <div data-role="footer" data-position="fixed" style="text-align: center" class="footer">
+            <span style="font-size: small">
+                <label id="LogOnFooterLabel">
+                    Mainstream Software</label>
+            </span>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="inspectionAttachmentPage" class="custScrolling">        
+        <style>
+            a .deleteIcon .ui-icon
+            {
+                width: 32px;
+                height: 32px;
+            }           
+            
+            .ui-icon-custom
+            {
+                background-position: 10px 0px;
+                background-size: 70%;
+                width: 32px;
+                height: 32px;
+                background-color: #2F3E46 !important;
+            }
+        </style>
+        <script type="text/javascript">
+
+            $("#inspectionAttachmentPage").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#inspectionAttachmentPage").on("pageinit", function () {                
+                inspectionPictureInitialisation();
+                $.GetOnlineSecuritySubTokens(400013, 2, InspectionAttachmentPageSecutiry);                
+                if (getLocal("TableName") == "InspectionItem" && InspectionItemImg == 1) {
+                    $("#imageUploadIdentifier").show();
+                }
+                else if (getLocal("TableName") == "InspectionAsset" && InspectionAssetsImg == 1) {
+                    $("#imageUploadIdentifier").show();
+                }
+                else if (getLocal("TableName") == "InspectionCapital" && InspectionCapitalImg == 1) {
+                    $("#imageUploadIdentifier").show();
+                }
+                else if (getLocal("TableName") == "InspectionVendor" && InspectionVendorImg == 1) {
+                    $("#imageUploadIdentifier").show();
+                }
+                else {
+                    $("#imageUploadIdentifier").hide();
+                }
+            });
+
+            $("#inspectionAttachmentPage").on("pagebeforeshow", function () {
+                var pageID = $.mobile.activePage.attr('id');
+                hideShowSync();
+                LoadTranslation('inspectionAttachmentPage', null);
+                var noAttachment = GetTranslatedValue("NoFileSelected");
+                if (IsCapitalScreenFlag != 1) {
+                    $('#InspAttachmentTitle').text(GetTranslatedValue("InspAttachmentTitle"));
+                }
+                else {
+                    $('#InspAttachmentTitle').text(GetTranslatedValue("InspAttachmentTitleAlt"));
+                }
+                $(pageID).find("#inspectionAttachmentFile").attr('alt', noAttachment);
+            });
+
+            $("#inspectionAttachmentPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspPic");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                $('a.deleteIcon').find('span').removeClass('ui-btn-up-b ui-shadow ui-btn-corner-all');
+                $("#inspectionAttachmentPage").find("#inspectionAttachTrigger").addClass("ui-disabled");
+
+                $("#DatabaseID").val(decryptStr(getLocal("DatabaseID")));
+                $("#Language").val(getLocal("Language"));
+                $("#SessionID").val(decryptStr(getLocal("SessionID")));
+                $("#gpsLocation").val(GlobalLat + "," + GlobalLong);
+
+                if (getLocal("TableName") == "InspectionAsset") {
+                    $("#ID2").val(getLocal("EquipTagSequence"));
+                }
+                else {
+                    if (getLocal("TableName") != "InspectionCapital") {
+                        $("#ID2").val(getLocal("Sequence"));
+                    }
+                    else {
+                        $("#ID2").val(getLocal("CapSeq"));
+                    }
+                }
+                $("#ID3").val(getLocal("TableName"));
+                if (getLocal("TableName") != "InspectionCapital") {
+                    $("#ID1").val(getLocal("InspectionWorkOrderNumber"));
+                }
+                else {
+                    $("#ID1").val('');
+                }
+
+                $("#employeeNumber").val(decryptStr(getLocal("EmployeeNumber")));
+                CheckingPendingData();
+
+            });            
+
+            $("#inspectionAttachmentImage").load(function () {
+                setTimeout(function () {
+                    $("#inspectionImagePopup").popup("open");
+                }, 500);
+                
+            });
+            
+            function newAttachment(form)
+            {
+                $('#ImageDescription').blur();
+                if(navigator.onLine)
+                {
+                    alert(form.ID3.value);
+                        //LoadMyLocation();
+                        if (form.ID3.value == 'InspectionItem') {
+                            InspectionItemImg = 1;
+                        }
+                        else if (form.ID3.value == 'InspectionAsset') {
+                            InspectionAssetsImg = 1;
+                        }
+                        else if (form.ID3.value == 'InspectionCapital') {
+                            InspectionCapitalImg = 1;
+                        }
+                        else {
+                            InspectionVendorImg = 1;
+                        }
+                        $("#gpsLocation").val(GlobalLat +","+ GlobalLong);
+                        $("#InspAttachmentpopup").popup('close');
+                        $("#imageUploadIdentifier").show();
+                        $("#SessionID").val(decryptStr(getLocal("SessionID")));
+                        console.log(form.ID3.value+'---'+form.inspectionAttachmentFile.value);
+                        var formData = new FormData(form);
+                }
+                else
+                {
+                    showError("No network connection. please try again when network is available.");
+                }
+            }
+            $("#addAttchment").val(GetTranslatedValue('WODetailAddAttachmentLink'));
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important;" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="ui-btn-left min-margin-top margin-left">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();" >back</a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left ui-btn-left shortcut-margin-top" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconInspPic" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p class="page-heading" id="InspAttachmentTitle">
+                
+            </p>
+            <!--<div data-role="collapsible" data-collapsed="false" id="savedImagesContainer">
+                <h4>
+                    Saved Images</h4>-->
+            <div class="inspection-content">
+                <ul data-role="listview" class="inspection-content-list" data-inset="true" id="savedImagesList">
+                </ul>
+            </div>
+            <!-- </div>-->
+            <div id="image_container">
+                <output id="thumbs">
+                </output>
+            </div>
+            <div id="buttonDiv" class="button-panel">
+                <input type="file" id="fileinput" style="display: none" onchange="javascript: check(this);" />
+                <div class="float-left">
+                    <a data-role="button" id="InspectionTakePictureButton" class="primary-button" data-mini="true" onclick="trigFileUpload()">
+                        Take Picture</a>
+                </div>
+                <div class="float-right">
+                    <a href="#" data-role="button" id="InspectionDeletePictureButton" class="secondary-button"
+                        data-mini="true" onclick="deleteImages();">Delete</a>
+                </div>
+            </div>
+            <!--<img class="img-menu" id="imageUploadIdentifier"/>-->
+            <div id="imageUploadIdentifier" style="text-align: center;">
+                Uploading Image...<!--:<progress value="22" max="100"></progress>-->
+            </div>
+            <a href="#popupUndismissible" data-rel="popup" data-role="button" data-inline="true"
+                style="display: none" data-position-to="origin">Undismissible Popup</a>
+            <div data-role="popup" id="popupUndismissible" class="ui-content" style="max-width: 280px"
+                data-dismissible="false">
+                <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete"
+                    data-iconpos="notext" class="ui-btn-left">Close</a>
+                <img id="showBigImage" src="" alt="" />
+            </div>
+        </div>
+        <div id="AttachmentDeletePopUp" data-role="popup" data-theme="c" data-overlay-theme="a"
+            data-dismissible="false" style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c">
+                <p id="inspDelConfirmMsg">
+                    Are you sure of deleting image</p>
+                <div class="button-panel">
+                    <div class="float-left">
+                        <a data-role="button" class="primary-button" onclick="confirmDelete();" data-rel="back" id="inspDelConfirmOK">
+                            OK</a>
+                    </div>
+                    <div class="float-right">
+                        <a data-role="button" class="secondary-button" onclick="cancelDelete();" data-rel="back" id="inspDelConfirmCancel">
+                            Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="SaveSuceesPopup" data-role="popup" data-theme="c" data-overlay-theme="a"
+            data-dismissible="false" style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c">
+                <p id="inspImgSavedConfirmMsg">
+                    Images saved.</p>
+                <a data-role="button" class="primary-button" onclick="successSave();" id="inspSuccessOK">OK</a>
+            </div>
+        </div>
+        <div id="DeleteSuccessPopup" data-role="popup" data-theme="c" data-overlay-theme="a"
+            data-dismissible="false" style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c">
+                <p id="inspImgDeletedConfirmMsg">
+                    Images Deleted.</p>
+                <a data-role="button" class="primary-button" onclick="successDelete();" id="inspDeleteOK">OK</a>
+            </div>
+        </div>
+        <div id="InspAttachmentpopup" data-role="popup" data-overlay-theme="a" data-dismissible="false"
+            style="max-width: 500px" data-position-to="window">
+            <div data-role="header" class="popup-Header">
+                <h1 style="margin: 0px!important;" id="inspPopupHeader">
+                    Add Attachment</h1>
+                <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+            </div>
+            <div data-role="content">
+                <form action="" method="POST" id="InspectionAttachmentForm">
+               <!--<label id="inspectionAttachmentLabel" for="AttachmentFile">
+                    Select File
+                </label>-->
+                <!--<input id="inspectionAttachmentFile" name="inspectionAttachmentFile" type="file" />-->
+                <img  style="width:60px;height;" id="smallImage" class="attachment-thumbnail" src=""/>
+                    <div class="ui-grid-a">
+                    <div class="ui-block-a">
+                        <img style="width:50px;height:50px;" onclick="capturePhotoAttachment(Camera.PictureSourceType.CAMERA);" class="img-camera" />
+                        </div>
+                    <div class="ui-block-b">
+                        <img style="width:50px;height:50px;" onclick="capturePhotoAttachment(Camera.PictureSourceType.PHOTOLIBRARY);" class="img-gallery" />
+                        </div>
+                    </div>
+                <textarea name="ImageDescription" id="ImageDescription" class="CommentsScrollBar"
+                    maxlength="200"></textarea>
+                <input type="hidden" name="DatabaseID" id="DatabaseID" />
+                <input type="hidden" name="Language" id="Language" />
+                <input type="hidden" name="InspectionAttachmentOperation" id="InspectionAttachmentOperation"
+                    value="2" />
+                <input type="hidden" name="ID3" id="ID3" />
+                <input type="hidden" name="ID2" id="ID2" />
+                <input type="hidden" name="ID1" id="ID1" />
+                <input id="inspectionAttachmentFile" name="inspectionAttachmentFile" type="hidden" class="attachment-data" />
+                <input type="hidden" name="EmployeeNumber" id="employeeNumber" />
+                <input type="hidden" name="GPSLocation" id="gpsLocation" />
+                <input type="hidden" name="SessionID" id="SessionID" />
+                <!--<input type="button" value="Add Attachment" onclick="inspectionAddAttachment(this.form)" id="inspAttachmentSubmitBtn"/>-->
+                <!-- <input type="button" id="addAttchment" value="Add Attachment" onclick="inspectionAddAttachment(this.form)" id="inspAttachmentSubmitBtn"/> -->
+                <!--<a data-role="button" class="primary-button" onclick="inspectionAddAttachment(this.form)">Add Attachment</a>-->
+                <button type="button" id="addAttchment" value="Add Attachment" onclick="inspectionAddAttachment(this.form)" >Add Attachment</button>
+                </form>
+                <p id="noImage">
+                    Please choose the image.</p>
+            </div>
+        </div>
+        <div data-role="popup" id="inspectionImagePopup" data-dismissible="false" data-overlay-theme="a"
+            data-position-to="window">
+            <a href="#" data-rel="back" data-role="button" data-iconpos="close" data-mini="true"
+                class="ui-btn-right" id="inspPopupCloseBtn">Close</a>
+            <img src="" id="inspectionAttachmentImage" />
+        </div>
+    </div>
+</body>
+</html>

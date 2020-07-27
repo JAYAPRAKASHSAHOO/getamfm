@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html>
+<head runat="server">
+    <meta name="viewport" content="width=device-width" />
+    <title></title>    
+</head>
+<body>
+    <div id="VendorDetails" data-role="page" data-theme="d" class="custScrolling">
+        <script type="text/javascript">           
+            var pageID = "VendorDetails";
+            $("#" + pageID).on("pagecreate", function () {
+                try {
+                    BindFormPopups(this.id);
+                }
+                catch (e) {
+                    log(e);
+                }
+            });
+
+            $("#VendorDetails").on("pagebeforeshow", function () {
+
+                // Load the Site labels. 
+                var pageID = "#" + $.mobile.activePage.attr('id');
+                var SiteLabels = getLocal("SiteLabels").split('$');
+                if (SiteLabels[0].length > 0) {
+                    $(pageID).find("#cityStateLabel").html(SiteLabels[0] + ' :');
+                }
+
+                hideShowSync();
+                LoadTranslation('VendorDetails', null);
+            });
+
+            $("#" + pageID).on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconVendorDetails");
+
+				updateBreadcrumb(this.id);
+                try {                    
+                    addPanel();
+                    GetVendorDetails();
+                    CheckingPendingData();
+                }
+                catch (e) {                    
+                }
+            });           
+
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left margin-right min-margin-top">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-theme="a" data-icon="bars"
+                    data-iconpos="notext">Menu</a> <a onclick="navigateToPreviousPage();
+                        " id="VDBackButton" data-theme="a" data-role="button" data-icon="arrow-l" data-iconpos="notext">
+                    </a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconVendorDetails" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+        <div class="SyncNotification" style="text-align:right;"> 
+            <img class="img-sync" style="vertical-align: middle;"/>Syncing...
+        </div>
+            <p id="VendorDetails-Title" class="page-heading">
+                Vendor Details
+            </p>
+            <p class="sub-header"  id="VendorName">
+               VendorName
+            </p>
+            <div class="table-content">
+                <div class="customTable">
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="groupLabel">
+                                Group</label>
+                        </div>
+                        <div id="VendorType" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="addressLabel">
+                                Address 1</label>
+                        </div>
+                        <div id="VendorAdd1" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="address2Label">
+                                Address 2</label>
+                        </div>
+                        <div id="VendorAdd2" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="cityStateLabel">                            
+                            </label>
+                        </div>
+                        <div id="VendorAdd3" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="countryLabel">
+                                Country</label>
+                        </div>
+                        <div id="VendorAdd4" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="voicePhone1Label">
+                                Voice Phone 1
+                            </label>
+                        </div>
+                        <div id="VoicePhone1" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="voicePhone2Label">
+                                Voice Phone 2
+                            </label>
+                        </div>
+                        <div id="VoicePhone2" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="faxLabel">
+                                Fax</label>
+                        </div>
+                        <div id="Fax" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="cellLabel">
+                                Cell</label>
+                        </div>
+                        <div id="CarPhone" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="emailLabel">
+                                Email</label>
+                        </div>
+                        <div id="EmailAddress" class="ValueTD">
+                        </div>
+                    </div>
+                    <div class="rowTR">
+                        <div class="LabelTD">
+                            <label id="contactLabel">
+                                Contact</label>
+                        </div>
+                        <div id="VendorContactName" class="ValueTD">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

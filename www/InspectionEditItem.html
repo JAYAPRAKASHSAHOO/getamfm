@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="editinspectionItemsPage" class="custScrolling">
+        <script type="text/javascript">
+            $("#editinspectionItemsPage").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#editinspectionItemsPage").on("pageinit", function () {
+                try {
+                    var pageID = "#" + $.mobile.activePage.attr('id');
+                    $.GetOnlineSecuritySubTokens(400013, 1, EditinspectionItemsPageSecurity);
+                }
+                catch (e) {
+                }
+            });
+
+            $("#editinspectionItemsPage").on("pagebeforeshow", function () {
+                hideShowSync();
+            });
+
+            $("#editinspectionItemsPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspEdit");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                LoadTranslation('editinspectionItemsPage', null);
+                setLocal("InspectionPageName", "InspectionEditItem");
+                if (navigator.onLine) {
+                    showLoading();
+                    var data = iMFMJsonObject({
+                        "RegionNumber": getLocal("RegionNumber"),
+                        "DivisionNumber": getLocal("DivisionNumber"),
+                        "Username": decryptStr(getLocal("Username")),
+                        "AreaID": getLocal("AreaId"),
+                        "CategoryID": getLocal("CategoryId"),
+                        "ItemID": getLocal("ItemId"),
+                        "InspectionNumber": getLocal("InspectionNumber"),
+                        "Sequence": getLocal("Sequence")                        
+                    });
+                    var inspectionURL = standardAddress + "Inspection.ashx?methodname=GetItemDetails";
+                    InspectionEditItemSuccess(inspectionURL, data);
+                }
+                else {
+                    ////showError("No network connection. Please try again when network is available.");
+                    showError(GetCommonTranslatedValue("NoNetworkCommon"));
+                }
+                CheckingPendingData();
+            });
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important;" data-tap-toggle="false">
+            <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" class="min-margin-top margin-left ui-btn-left"
+                data-iconpos="notext">Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconInspEdit" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <div class="bread-crumb">
+                <a href="#" onclick="NavigateBackToArea();" id="editAreaName" class="breadCrumbLink"></a>
+				<a href="#" onclick="NavigateBackToCategory();" id="editCategName" class="breadCrumbLink"></a>
+				<a href="#" onclick="NavigateBackToItems();" id="editItemName" class="breadCrumbLink"></a>
+            </div>
+            <p class="page-heading" id="inspEditItemTitle">
+            </p>
+            <form id="editItemForm">
+            <div class="form-section">
+                <div id="RatingDiv">
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%;">
+                            <label id="RatingRequriedLabel" style="color: Red">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 97%;">
+                            <label for="rating" id="RatingLabel">
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <select name="rating" id="rating">
+                            <option value="-1">-Select-</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="ImapactDiv">
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%;">
+                            <label id="ImpactRequriedLabel" style="color: Red">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 97%;">
+                            <label for="impact" id="ImpactLabel">
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <select name="impact" id="impact">
+                            <option value="-1">-Select-</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="CommentTextAreaDiv">
+                    <!--<label id="commentsRequriedLabel" style="color: Red">
+                        *</label>-->
+                    <div>
+                        <label for="comments" id="commentsLabel">
+                        </label>
+                    </div>
+                    <div>
+                        <textarea cols="40" rows="8" name="comments" id="comments" maxlength="500" class="CommentsScrollBar"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div id="editItemButtonController" class="button-panel">
+                <div class="float-right">
+                    <a data-role="button" class="secondary-button editScreenButtons" data-inline="true"
+                        data-tablename="InspectionItem" id="editItemPictureButton" onclick="NavigateEditToPicturesScreen(this);">
+                    </a><a href="#workOrderOptionsPopUp" class="secondary-button editScreenButtons" data-role="button"
+                        data-rel="popup" data-inline="true" id="editItemCreateWOButton"></a><a data-role="button"
+                            class="secondary-button editScreenButtons" data-inline="true" id="editItemCapitalButton"
+                            onclick="NavigateToCapitalScreen();"></a><a data-role="button" class="secondary-button editScreenButtons"
+                                data-inline="true" data-customernumber="" data-customersitenumber="" id="editItemAssetsButton"
+                                onclick="NavigateToAssets(this);"></a><a data-role="button" class="secondary-button editScreenButtons"
+                                    data-inline="true" data-customernumber="" data-customersitenumber="" data-problemcodenumber=""
+                                    id="editItemVendorButton" onclick="NavigateToVendor(this);"></a>
+                </div>
+            </div>
+            <div id="imageContainer">
+                <img class="img-completed" id="saveEditItemImage" alt="Save" onclick="editInspectionItem();" />
+                <img class="img-cancel" alt="Cancel" onclick="NavigateBackToItems();" id="cancelEditItemImage" />
+            </div>
+            <input type="hidden" id="inspectionEditItemCapitalHiddenValue" />
+            <input type="hidden" id="notSavedImpact" />
+            <input type="hidden" id="notSavedCapital" />
+            </form>
+        </div>
+        <div data-role="popup" id="workOrderOptionsPopUp" data-position-to="origin">
+            <ul data-role="listview" data-inset="true" style="min-width: 210px;" data-theme="d">
+                <li><a id="correctiveAction" href="#" onclick="NavigateToCreateWO(this);"></a></li>
+                <li><a id="plannedExpense" href="#" onclick="NavigateToCreateWO(this);"></a></li>
+                <li><a id="viewWorkOrders" href="#" onclick="NavigateToCreateWO(this);"></a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

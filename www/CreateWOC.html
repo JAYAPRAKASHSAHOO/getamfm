@@ -1,0 +1,551 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="CreateWOC" data-role="page" class="custScrolling">
+        <script type="text/javascript">
+            $("#CreateWOC").on("pagebeforeshow", function () {
+                hideShowSync();
+                //**** Call the Translations
+                LoadTranslation('CreateWOC', LoadAdditionalFormTranslations(this.id));
+                //**** End
+
+                var pageID = "#" + $.mobile.activePage.attr('id');
+                var SgtCollection = $.GetSecuritySubTokens(MasterID, 0);
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "L1L2Panel", "CanAccess")) {
+                    $(pageID).find("#L1L2PanelDiv").hide();
+                }
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "GroupSubGroupPanel", "CanAccess")) {
+                    $(pageID).find("#GroupSubGroupPanelDiv").hide();
+                }
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "WOAttachmentPanel", "CanAccess")) {
+                    $(pageID).find("#WOAttachmentPanelUI").hide();
+                    createWOAttachmentFlag = false;
+                }
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "CreateWorkOrderSource", "CanAccess")) {
+                    $(pageID).find("#SourceDiv").hide();
+                }
+                else {
+                    for (var i = 0; i < SgtCollection.SgstCollection.length; i++) {
+                        if (SgtCollection.SgstCollection[i].SubTokenDescription == "CreateWorkOrderSource") {
+                            if (SgtCollection.SgstCollection[i].Required == 1) {
+                                $(pageID).find("#sourceRequiredLabel").show();
+                                $(pageID).find("#WorkOrderSourceSelect").attr("data-requried", "true");
+                            }
+                            else {
+                                if (SgtCollection.SgstCollection[i].ReadOnly == 1) {
+                                    $(pageID).find("#sourceRequiredLabel").hide();
+                                    $(pageID).find("#WorkOrderSourceSelect").prop('disabled', false);
+                                }
+                                else {
+                                    $(pageID).find("#sourceRequiredLabel").hide();
+                                    $(pageID).find("#WorkOrderSourceSelect").prop('disabled', true);
+                                }
+                            } // end of else
+                        } // end of CreateWorkOrderSource 
+                    } //End of for loop
+                } //end of else
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "ResolutionCode", "CanAccess")) {
+                    $(pageID).find("#ResolutionCodeUI").hide();
+                }
+                else {
+                    CheckSecurityForResolutionCode(SgtCollection);
+                    BindResolutionCodeDD();
+                }
+
+                SecurityForCallerName(0);
+                BindSiteLabels();
+
+                EnforceFieldSecurity(SgtCollection, "OrderType", false);
+                // Need additional checks for OrderType.
+                if ($.GetSecuritySubTokensBit(SgtCollection, 0, "OrderType", "CanAccess")) {
+                    // If enabled, it's sys required.
+                    $('[data-field="OrderType"] .mandatory').show();
+                }
+
+                var logOutLabel = GetCommonTranslatedValue("LogOutLabel");
+                var selectPropertyOptionLabel = GetTranslatedValue("SelectPropertyDropDownOptions");
+                var selectLabel = GetCommonTranslatedValue("SelectLabel");
+                var ProblemCodeDropDownValue = GetTranslatedValue("ProblemCodeDropDownValue");
+                var noAttachment = GetTranslatedValue("NoAttachmentLabel");
+
+                $(pageID).find("#CreateWOCLogoutButton .ui-btn-text").text(logOutLabel);
+
+                $(pageID).find("#SPidDDL").attr("data-requried", "true");
+                $(pageID).find("#SFloorValue").attr("data-requried", "true");
+                $(pageID).find("#SRoomValue").attr("data-requried", "true");
+                $(pageID).find("#problemCodeDD").attr("data-requried", "true");
+                $(pageID).find("#problemDescriptionTextArea").attr("data-requried", "true");
+
+                $(pageID).find("#SPidDDL").html('<option value="-1">' + selectPropertyOptionLabel + '</option>').selectmenu("refresh");
+                $(pageID).find("#problemCodeDD").html('<option value="-1">' + ProblemCodeDropDownValue + '</option>').selectmenu("refresh");
+                $(pageID).find("#SFloorValue").html('<option value="-1">' + selectLabel + '</option>').selectmenu("refresh").selectmenu("disable");
+                $(pageID).find("#SRoomValue").html('<option value="-1">' + selectLabel + '</option>').selectmenu("refresh").selectmenu("disable");
+                //$(pageID).find("#attachmentCheckLabel .ui-btn-text").text(GetTranslatedValue("AttachmentCheckBoxLabel"));
+                ////SR: Pentesting & JQM update
+                $(pageID).find("#attachmentCheckLabel").text(GetTranslatedValue("AttachmentCheckBoxLabel"));
+                $(pageID).find("#CreateAttachmentContainer").hide();
+                $(pageID).find('#clearAttachmentSource').hide();
+                $(pageID).find('#HiddenAttachmentFlag').val('false');
+                $(pageID).find('#WorkOrderSourceLabel').text(GetTranslatedValue("WorkOrderSourceLabel"));
+                BindWorkOrderSource("WorkOrderSourceSelect", pageID);
+                $(pageID).find("#callerNameLabel").text(GetTranslatedValue("CallerNameLabel"));
+                $(pageID).find("#workOrderAttachment").attr('alt', noAttachment);
+
+            });
+            $("#CreateWOC").on("pageshow", function () {
+                updateBreadcrumb(this.id, true);
+                var pageID = "#" + $.mobile.activePage.attr('id');
+                addPanel();
+                CheckingPendingData();
+                //                $(pageID).find("#lblPageName").text("Create Completed Work Order");
+                $(pageID).find("#DatabaseID").val(decryptStr(localStorage.getItem("DatabaseID")));
+                $(pageID).find("#Username").val(decryptStr(localStorage.getItem("Username")));
+                $(pageID).find("#Language").val(getLocal("Language"));
+                $(pageID).find("#EmployeeNumber").val(decryptStr(getLocal("EmployeeNumber")));
+                $(pageID).find("#EmployeeName").val(decryptStr(getLocal("FullName")));
+                $(pageID).find("#hiddenRequestedScreen").val(getLocal("ScreenName"));
+                $(pageID).find("#CreateWORequestedScreen").val(getLocal("ScreenName"));
+
+                $(pageID).find("label").css("font-weight", "bold");
+                $(pageID).find("#setLocLocal").hide();
+                $(".DeviceTimeLabel").hide();
+                setLocation();
+
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconWOC");
+
+                $("#WorkOrderSourceSelect").change(function () {
+                    $("#callerNameTextBox").val("");
+                    if ($.trim(getLocal("MSIClientCode")) == "IO") {
+                        if ($("#WorkOrderSourceSelect :selected").text() == 'TOS') {
+                            $("#callerNameDiv").show();
+                            $("#callerNameRequiredLabel").show();
+                            $("#callerNameTextBox").attr("data-requried", "true");
+                        }
+                        else {
+                            $("#callerNameTextBox").attr("data-requried", "false");
+                            SecurityForCallerName(0);
+                        }
+                    }
+                });
+
+            });
+
+            $("#CreateWOC").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            function TimeEntryClose_Click() {
+                $('#timeEntryContentDiv').popup("close");
+            }
+
+            // To avoid entering html tags in text box
+            $("#problemDescriptionTextArea").blur(function () {
+                if ($("#problemDescriptionTextArea").val().length > 0) {
+                    $("#problemDescriptionTextArea").val(securityError($("#problemDescriptionTextArea")));
+                }
+            });
+
+            $("#callerNameTextBox").blur(function () {
+                if ($("#callerNameTextBox").val().length > 0) {
+                    $("#callerNameTextBox").val(securityError($("#callerNameTextBox")));
+                }
+            });      
+        </script>
+        <style>
+            .myDivBlockA
+            {
+                width: 35% !important;
+            }
+            .myDivBlockB
+            {
+                width: 52% !important;
+                word-wrap: break-word !important;
+            }
+            .myBlockB
+            {
+                word-wrap: break-word !important;
+            }
+        </style>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <a href="#" data-role="button" class="min-margin-top margin-left ui-btn-left" data-icon="bars"
+                onclick="ShowMenuItems()" data-iconpos="notext">Menu</a> <a href="#" onclick="NavigateToWorkOrderPage(this.name)"
+                    id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left">
+                    Scan</a>
+            <a href="#" data-role="button" id = "settingsIconWOC" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();" style="display: none"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...</div>
+            <form id="frmCreateWO">
+            <div style="font-weight: bold; text-align: center" class="page-heading">
+                <span id="lblPageName"></span>
+            </div>
+            <div class="form-content-panel">
+                <ul id="LocationsUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="SPidDDLRequiredFieldLabel" style="color: Red">
+                            *</label>
+                        <label id="OSPidLabel">
+                        </label>
+                        <input type="text" name="SPidTextBox" id="SPidTextBox" onkeyup="BindPidDDL(this.value)" />
+                        <select id="SPidDDL" onchange="FillPropertyDetailsSearch(this.value)">
+                            <option value="-1"></option>
+                        </select>
+                        <div id="LocDiv">
+                            <div id="L1L2PanelDiv">
+                                <div class="ui-grid-b">
+                                    <div class="ui-block-a  myDivBlockA">
+                                        <!--<!--<label id="Label4" style="color: Red">
+                                    *</label>-->
+                                        <label id="SStCityLabel">
+                                        </label>
+                                    </div>
+                                    <div class="ui-block-b myDivBlockB">
+                                        <span id="SStCityValue"></span>
+                                    </div>
+                                    <div class="ui-block-c" style="position: absolute; right: 1%; width: 13%">
+                                        <a href="#" id="setLocLocal" onclick="javascript:SetLocLocal()" data-role="button"
+                                            data-icon="home" data-iconpos="notext"></a>
+                                    </div>
+                                </div>
+                                <div class="ui-grid-a">
+                                    <div class="ui-block-a myDivBlockA">
+                                        <b>
+                                            <!--<label id="buildingRequiredFieldLabel" style="color: Red">
+                                        *</label>-->
+                                            <label id="BuildingSectionLabel">
+                                            </label>
+                                        </b>
+                                    </div>
+                                    <div class="ui-block-b myBlockB">
+                                        <span id="SBuildingValue"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <b>
+                                <label id="floorRequiredFieldLabel" style="color: Red">
+                                    *</label>
+                                <label id="SFloorLabel">
+                                </label>
+                            </b>
+                            <select name="SFloorValue" id="SFloorValue" onchange="javascript:BindRoomDDL()">
+                                <option value="-1"></option>
+                            </select>
+                            <b>
+                                <label id="roomRequiredFieldLabel" style="color: Red">
+                                    *</label>
+                                <label id="SRoomLabel">
+                                </label>
+                            </b>
+                            <select name="SRoomValue" id="SRoomValue">
+                                <option value="-1"></option>
+                            </select>
+                        </div>
+                    </li>
+                </ul>
+                <ul id="ProblemCodeUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="lblProblemCode" for="PCTB">
+                            <b></b>
+                        </label>
+                        <input id="PCTB" name="PCTB" type="text" maxlength="20" onkeyup="BindProblemCodeDD()" />
+                        <select name="problemCodeDD" id="problemCodeDD" onchange="GetGroupSubgroupData()">
+                            <option value="-1"></option>
+                        </select>
+                        <div id="GroupSubGroupPanelDiv">
+                            <label for="select2" id="lblGroupName">
+                                <b>
+                                    <label id="groupRequiredFieldLabel" style="color: Red">
+                                        *</label>
+                                    <label id="lblGroup">
+                                    </label>
+                                    <label id="groupLabel">
+                                    </label>
+                                </b>
+                            </label>
+                            <br />
+                            <label for="select3" id="lblsubGroupName">
+                                <b>
+                                    <label id="subGroupRequiredFieldLabel" style="color: Red">
+                                        *</label>
+                                    <label id="lblSubGroup">
+                                    </label>
+                                    <label id="subGroupLabel">
+                                    </label>
+                                </b>
+                            </label>
+                            <br />
+                        </div>
+                        <label for="problemDescriptionTA">
+                            <b>
+                                <label id="problemDescriptionRequiredFieldLabel" style="color: Red">
+                                    *</label>
+                                <label id="lblProblemDescription">
+                                </label>
+                            </b>
+                        </label>
+                        <textarea id="problemDescriptionTextArea" name="problemDescriptionTextArea" rows="20"
+                            cols="20" class="CommentsScrollBar"></textarea>
+                    </li>
+                </ul>              
+                <ul id="OrderTypeDiv" data-role="listview" data-inset="true" data-field="OrderType">
+                    <li>
+                        <label class="mandatory">
+                            *</label>
+                        <label id="orderTypeLabel">
+                        </label>
+                        <select name="orderTypeDropDown" id="orderTypeDropDown" class="js-sToken">
+                            <option value="-1">-Select-</option>
+                        </select>
+                    </li>
+                </ul>
+                <ul id="SourceDiv" data-role="listview" data-inset="true">
+                    <li><b>
+                        <label id="sourceRequiredLabel" style="color: Red">
+                            *</label>
+                        <label id="WorkOrderSourceLabel">
+                        </label>
+                    </b>
+                        <select id="WorkOrderSourceSelect" name="WorkOrderSourceSelect">
+                        </select>
+                        <div id="callerNameDiv">
+                            <b>
+                                <label id="callerNameRequiredLabel" style="color: Red">
+                                    *</label>
+                                <label id="callerNameLabel">
+                                </label>
+                            </b>
+                            <input type="text" id="callerNameTextBox" />
+                        </div>
+                    </li>
+                </ul>
+                <ul id="ResolutionCodeUI" data-role="listview" data-inset="true">
+                    <li>
+                        <label for="ResolutionCodeTA">
+                            <b>
+                                <label id="ResolutionCodeRequiredFieldLabel" style="color: Red">
+                                    *</label>
+                                <label id="lblResolutionCode">
+                                </label>
+                            </b>
+                        </label>
+                        <select name="ResolutionCodeDD" id="ResolutionCodeDD" onchange="GetRCGroupSubgroupData()">
+                            <option value="-1"></option>
+                        </select>
+                        <div id="RCGroupDiv">
+                            <b>
+                                <label id="RCGroupLabel">
+                                </label>
+                                <label id="RCGroupValueLabel">
+                                </label>
+                            </b>
+                            <br />
+                        </div>
+                        <div id="RCSubGroupDiv">
+                            <b>
+                                <label id="RCSubGroupLabel">
+                                </label>
+                                <label id="RCSubGroupValue">
+                                </label>
+                            </b>
+                            <br />
+                        </div>
+                    </li>
+                </ul>
+                <ul id="MiscFunctionsUL" data-role="listview" data-inset="true">
+                    <li>
+                        <div id="PendingLaborDiv">
+                            <div class="ui-grid-b">
+                                <div class="ui-block-a myDivBlockA">
+                                    <label style="display: none" id="PendingLaborLabel" for="whatisthis">
+                                        Labor:</label>
+                                </div>
+                                <div class="ui-block-b myDivBlockB">
+                                    <span id="PendingArrival" type="datetime"></span><span id="PendingDeparture" type="datetime">
+                                    </span>
+                                </div>
+                                <div class="ui-block-c">
+                                    <a id="AddLabor" href="#" data-theme="d" data-role="button" class="primary-button float-left"
+                                        data-rel="popup" onclick="AddLaborPopupOpen();">
+                                        <label id="AddLaborLabel">
+                                        </label>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div id="WOAttachmentPanelUI">
+                    <label id="attachmentCheckLabel">
+                        <input id="AttachmentRequiredCheckBox" name="AttachmentRequiredCheckBox" type="checkbox"
+                            onchange="CheckAttachmentRequired()" /></label>
+                    <div id="CreateAttachmentContainer">
+                        <div class="ui-grid-a">
+                            <div class="ui-block-a" style="text-align: center">
+                                <img class="img-camera" onclick="capturePhotoAttachment(Camera.PictureSourceType.CAMERA);" />
+                            </div>
+                            <div class="ui-block-b" style="text-align: center">
+                                <img class="img-gallery" onclick="capturePhotoAttachment(Camera.PictureSourceType.PHOTOLIBRARY);" />
+                            </div>
+                        </div>
+                        <div class="ui-grid-a" style="margin-top: 5%">
+                            <div class="ui-block-a" style="width: 80%;">
+                                <img src="" id="workOrderAttachment" class="attachment-thumbnail" width="160px" height="160px" />
+                            </div>
+                            <div class="ui-block-b" style="width: 20%;">
+                                <img class="img-delete attachment-thumbnail-clear" id="clearAttachmentSource" onclick="clearWorkOrderAttachment();" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="button-panel">
+                <div class="float-left">
+                    <a id="SubmitButton" href="#" id="A1" data-theme="d" data-role="button" class="primary-button"
+                        onclick="SubmitForm()">
+                        <label id="Label2">
+                        </label>
+                    </a>
+                </div>
+                <div class="float-right">
+                    <a id="ResetButton" href="#" data-theme="d" data-role="button" class="secondary-button"
+                        onclick="ResetFields(true)">
+                        <label id="Label3">
+                        </label>
+                    </a>
+                </div>
+            </div>
+            <input type="hidden" id="hiddenRequestedScreen" name="hiddenRequestedScreen" value="Create WO" />
+            <input type="hidden" id="hiddenFieldCityText" name="hiddenFieldCityText" />
+            <input type="hidden" id="hiddenFieldCityValue" name="hiddenFieldCityValue" />
+            <input type="hidden" id="hiddenFieldBuildingValue" name="hiddenFieldBuildingValue" />
+            <input type="hidden" id="hiddenFieldBuildingText" name="hiddenFieldBuildingText" />
+            <input type="hidden" id="hiddenFieldFloorText" name="hiddenFieldFloorText" />
+            <input type="hidden" id="hiddenFieldRoomText" name="hiddenFieldRoomText" />
+            <input type="hidden" id="groupHiddenField" name="groupHiddenField" />
+            <input type="hidden" id="subGroupHiddenField" name="subGroupHiddenField" />
+            <input type="hidden" id="hiddenFieldCreateFail" name="hiddenFieldCreateFail" />
+            <input type="hidden" id="hiddenFieldMandatoryFieldMsg" name="hiddenFieldMandatoryFieldMsg" />
+            <input type="hidden" name="DatabaseID" id="DatabaseID" />
+            <input type="hidden" name="Username" id="Username" />
+            <input type="hidden" name="Language" id="Language" />
+            <input type="hidden" name="EmployeeNumber" id="EmployeeNumber" />
+            <input type="hidden" name="EmployeeName" id="EmployeeName" />
+            <input type="hidden" name="ProcessStage" id="hiddenProcessStage" />
+            <input type="hidden" name="HiddenProblemCodeDesc" id="HiddenProblemCodeDesc" />
+            <input type="hidden" name="hiddenArrivalDate" id="hiddenArrivalDate" />
+            <input type="hidden" name="hiddenDepartureDate" id="hiddenDepartureDate" />
+            <input type="hidden" name="AttachmentFlag" value="" id="HiddenAttachmentFlag" />
+            <input type="hidden" name="HiddenSourceField" id="HiddenSourceField" />
+            <input type="hidden" id="RCgroupHiddenField" name="RCgroupHiddenField" />
+            <input type="hidden" id="RCsubGroupHiddenField" name="RCsubGroupHiddenField" />
+            <input type="hidden" name="HiddenFieldCallerName" id="HiddenFieldCallerName" />
+            <input type="hidden" name="HiddenGPSLocation" id="HiddenGPSLocation" />
+			<input type="hidden" name="HiddenSessionID" id="HiddenSessionID" />
+            <input type="hidden" name="OrderType" id="HiddenOrderType" />
+            <input type="hidden" name="HiddenBuildingCurrency" id="HiddenBuildingCurrency" />
+            </form>
+            <form id="frmCreateWOAttachment">
+            <input type="hidden" id="CreateWORequestedScreen" name="CreateWORequestedScreen"
+                value="Create WO" />
+            <input type="hidden" id="CreateWODataBaseID" name="CreateWODataBaseID" value="" />
+            <input type="hidden" id="CreateWOUserName" name="CreateWOUserName" value="" />
+            <input type="hidden" id="CreateWOLanguage" name="CreateWOLanguage" value="" />
+            <input type="hidden" id="CreateWOEmployeeNumber" name="CreateWOEmployeeNumber" value="" />
+            <input type="hidden" id="CreateWOEmployeeName" name="CreateWOEmployeeName" value="" />
+            <input type="hidden" id="CreateWONumber" name="CreateWONumber" value="" />
+            <input type="hidden" id="CreateWOAttacment" name="CreateWOAttacment" value="" class="attachment-data" />
+            <input type="hidden" id="CreateWOPriority" name="CreateWOPriority" value="" />
+            <input type="hidden" name="GPSLocation" id="GPSLocation" value="" />
+            <input type="hidden" name="SessionID" id="SessionID" />
+            <input type="button" id="AttachDispForCreateWO" onclick="PostWOAttachment(this.form)"
+                style="display: none;" />
+            </form>
+        </div>
+        <div id="loadingPopupDiv" data-role="popup" data-dismissible="false" data-overlay-theme="a">
+            <h2>
+                <img class="img-ajax-loader" alt="Loading..." />
+            </h2>
+        </div>
+        <div id="woSyncPopupDiv" data-role="popup" data-dismissible="false" data-overlay-theme="a">
+            <h3>
+                <label id="Label1">
+                    Synchronising...
+                </label>
+            </h3>
+        </div>
+        <div id="timeEntryContentDiv" data-role="popup" data-overlay-theme="a" data-position-to="window"
+            data-dismissible="false" style="width: 260px; height: 380px;" tabindex="0">
+            <div data-role="header" class="popup-Header" style="padding-left: 10px; padding-right: 10px">
+                <h1 style="margin: 0px!important;" id="AddLabor_PopupLabel">
+                </h1>
+                <!--<a href="#" data-role="button" data-theme="a" class="ui-corner-all ui-icon-delete ui-btn-icon-notext ui-btn" id="AddLaborTopCloseButton" onclick="TimeEntryClose_Click();" ></a>-->
+            </div>
+            <!--<div class="ui-grid-a" style="padding-left:10px;padding-right:10px" >-->
+            <div id="EditDiv" class="ui-block-b" style="position: absolute; padding-left: 5px;
+                padding-right: 5px; width: 100%">
+                <input type="hidden" id="IndexHidden" />
+                <input type="hidden" id="TimeCardDetailNumberHidden" />
+                <span id="LaborErrorText" style="color: Red;"></span>
+                <br />
+                <span class="DeviceTimeLabel" id="DeviceTimeLabel">The time shown is from your Device.</span>
+                <div id="TimeCardSummaryTable">
+                    <div id="ArrivalDateRow">
+                        <div>
+                            <label id="ArrivalDateMandatoryLabel" style="color: Red;">
+                                *</label>
+                            <label id="ArrivalDateLabel">
+                            </label>
+                        </div>
+                        <div class="ui-grid-a">
+                            <div class="ui-block-a" style="width: 75%;">
+                                <input type="datetime-local" id="ArrivalDateTextBox" onchange="updateLabor();" onblur="updateLabor();" />
+                            </div>
+                            <div class="ui-block-b" style="width: 25%; margin-top: 8%; padding-left: 3px;">
+                                <span class="ArrivalSiteTZLabel" id="ArrivalSiteTZLabel"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="DepartureDateRow">
+                        <div>
+                            <label id="DepartureDateMandatoryLabel" style="color: Red;">
+                                *</label>
+                            <label id="DepartureDateLabel">
+                            </label>
+                        </div>
+                        <div class="ui-grid-a">
+                            <div class="ui-block-a" style="width: 75%">
+                                <input type="datetime-local" id="DepartureDateTextBox" onchange="updateLabor();"
+                                    onblur="updateLabor();" />
+                            </div>
+                            <div class="ui-block-b" style="width: 25%; margin-top: 8%; padding-left: 3px;">
+                                <span class="DepartureSiteTZLabel" id="DepartureSiteTZLabel"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="CalculatedHoursRow" class="ui-grid-a">
+                        <label id="CalculatedHoursLabel">
+                        </label>
+                        <label id="CalculatedHoursValueLabel">
+                        </label>                        
+                    </div>
+                </div>
+                <a data-role="button" id="TimeEntry_SaveButton" data-theme="b" onclick="SaveLaborForOrder();"
+                        data-inline='true' ></a><a data-role="button" id="TimeEntry_CloseButton"
+                            data-theme="b" data-inline="true" onclick="TimeEntryClose_Click();">
+                </a>                
+            </div>
+        </div>
+</body>
+</html>

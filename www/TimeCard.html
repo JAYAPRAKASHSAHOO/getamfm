@@ -1,0 +1,242 @@
+﻿<div data-role="page" id="TimeCard" class="custScrolling">
+    <script type="text/javascript">
+        var timeCardPageID = "TimeCard";
+        var timeCardPage = $("#" + timeCardPageID);
+        var yearDropDown = timeCardPage.find("#YearDropDown");
+        var monthDropDown = timeCardPage.find("#MonthDropDown");
+        var weekDropDown = timeCardPage.find("#WeekDropDown");
+        var periodValueLabel = timeCardPage.find("#PeriodValueLabel");
+        var userNameDropDown = timeCardPage.find("#UserNameDropDown");
+        var timeCardPopup = timeCardPage.find("#TimeCardPopUp");
+        var divisonSummary = timeCardPage.find("#DivisionSummaryButton");
+        var costCenterSummary = timeCardPage.find("#CostCenterSummaryButton");
+        var userNameSummary = timeCardPage.find("#UserNameSummaryButton");
+        var divisionValueLabel = timeCardPage.find("#DivisionValueLabel");
+        var divisionValueHidden = timeCardPage.find("#DivisionValueHidden");
+        var costCenterValueLabel = timeCardPage.find("#CostCenterValueLabel");
+        var costCenterValueHidden = timeCardPage.find("#CostCenterValueHidden");
+        var popUpHeader2Label = timeCardPage.find("#PopUpHeader2Label");
+        var accumulatedValueLabel = timeCardPage.find("#AccumulatedValueLabel");
+        var billableValueLabel = timeCardPage.find("#BillableValueLabel");
+        var contractValueLabel = timeCardPage.find("#ContractValueLabel");
+        var nonAppliedValueLabel = timeCardPage.find("#NonAppliedValueLabel");
+        var differenceValueLabel = timeCardPage.find("#DifferenceValueLabel");
+
+        var divisionSummaryEnabled = true;
+        var userNameSummaryEnabled = true;
+        var costCenterSummaryEnabled = true;
+
+        var glPeriod = [];
+        var weekList = [];
+        var monthName = [];
+        var yearTranslation;
+        var monthTranslation;
+        var weekTranslation;
+        var userNameTranslation;
+        var cannotBeEmptyTranslation;
+        var noNetworkTranslation;
+        
+        var source = getLocal("TimeCard_Source");
+
+        timeCardPage.on("pagecreate", function () {
+            BindFormPopups(this.id);
+        });
+
+        timeCardPage.on("pagebeforeshow", function () {
+            hideShowSync();
+        });
+
+        timeCardPage.on("pageshow", function () {
+            // Hide or show the settings icon
+            configureSettingsButton("settingsIconTimeCard");
+
+			updateBreadcrumb(this.id, true);
+            addPanel();
+            CheckingPendingData();
+            showActionPopupLoading();
+            $.GetOnlineSecuritySubTokens(400029, 0, TimeCardPageSecurity);
+            });        
+    </script>
+    <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+        <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext" class="ui-btn-left">
+        </a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+        <a href="#" data-role="button" id = "settingsIconTimeCard" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a><span class="ui-title"></span>
+    </div>
+    <div data-role="content" class="content-container">
+        <p class="page-heading">
+            <label id="TimeCardHeaderLabel">
+            </label>
+        </p>
+        <div class="ui-grid-a">
+            <div class="ui-block-a" id="YearDiv">
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 2%;">
+                        <label id="YearMandatoryLabel" style="color: Red;">
+                            *</label>
+                    </div>
+                    <div class="ui-block-b" style="width: 97%;">
+                        <select id="YearDropDown" onchange="LoadGLPeriodMonth();">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-block-b" id="MonthDiv">
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 2%;">
+                        <label id="MonthMandatoryLabel" style="color: Red;">
+                            *</label>
+                    </div>
+                    <div class="ui-block-b" style="width: 97%;">
+                        <select id="MonthDropDown" onchange="LoadGLPeriodWeek();">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-role="fieldcontain" id="PeriodValueDiv">
+            <label id="PeriodValueLabel">
+            </label>
+        </div>
+        <div data-role="fieldcontain" id="DivisionValueDiv">
+            <div class="ui-grid-a">
+                <div class="ui-block-a" style="width: 90%">
+                    <b>
+                        <label id="DivisionValueLabel">
+                        </label>
+                    </b>
+                </div>
+                <div class="ui-block-b" style="width: 10%" id="DivisionSummaryDiv">
+                    <a id="DivisionSummaryButton" href="#" data-role="button" data-icon="info" data-iconpos="notext"
+                        class="ui-disabled" style="float: right; margin-right: 20%" onclick="ShowSummary(0);">
+                    </a>
+                </div>
+            </div>
+            <input type="hidden" id="DivisionValueHidden" />
+        </div>
+        <div data-role="fieldcontain" id="Div3">
+            <div class="ui-grid-a">
+                <div class="ui-block-a" style="width: 90%" id="CostCenterValueDiv">
+                    <strong>
+                        <label id="CostCenterValueLabel">
+                        </label>
+                    </strong>
+                </div>
+                <div class="ui-block-b" style="width: 10%;" id="CostCenterSummaryDiv">
+                    <a id="CostCenterSummaryButton" href="#" data-role="button" data-icon="info" style="float: right;
+                        margin-right: 20%" data-iconpos="notext" class="ui-disabled" onclick="ShowSummary(1);">
+                    </a>
+                </div>
+            </div>
+            <input type="hidden" id="CostCenterValueHidden" />
+        </div>
+        <div data-role="fieldcontain" id="UserDiv">
+            <div class="ui-grid-a">
+                <div class="ui-block-a" style="width: 90%" id="UserNameDiv">
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%;">
+                            <label id="UserNameMandatoryLabel" style="color: Red;">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 97%;">
+                            <select id="UserNameDropDown" onchange="UserNameChanged();">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui-block-b" style="width: 10%">
+                    <a id="UserNameSummaryButton" href="#" data-role="button" data-icon="info" data-iconpos="notext"
+                        class="ui-disabled" style="float: right; margin-right: 20%" onclick="ShowSummary(2);">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div data-role="fieldcontain" id="WeekDiv">
+            <div class="ui-grid-a">
+                <div class="ui-block-a" style="width: 2%;">
+                    <label id="WeekMandatoryLabel" style="color: Red;">
+                        *</label>
+                </div>
+                <div class="ui-block-b" style="width: 97%;">
+                    <select id="WeekDropDown">
+                        <option></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <img onclick="NavigateNext();" id="NavigateNextButton" style="float: right; margin-right: 2%"
+            class="img-start" />
+    </div>
+    <div data-role="popup" id="TimeCardPopUp" data-transition="pop">
+        <div data-role="header" class="popup-Header">
+            <label id="PopUpHeader1Label">
+            </label>
+            <label id="PopUpHeader2Label">
+            </label>
+            <br />
+            <label id="PopUpHeader3Label">
+            </label>
+        </div>
+        <div data-role="content">
+            <table id="TimeCardSummaryTable" class="customTable">
+                <tbody>
+                    <tr>
+                        <td class="LabelTD">
+                            <label id="AccumulatedLabel">
+                            </label>
+                        </td>
+                        <td class="ValueTD">
+                            <label id="AccumulatedValueLabel">
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label id="BillableLabel">
+                            </label>
+                        </td>
+                        <td>
+                            <label id="BillableValueLabel">
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label id="ContractLabel">
+                            </label>
+                        </td>
+                        <td>
+                            <label id="ContractValueLabel">
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="LabelTD">
+                            <label id="NonAppliedLabel">
+                            </label>
+                        </td>
+                        <td class="ValueTD">
+                            <label id="NonAppliedValueLabel">
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="LabelTD">
+                            <label id="DifferenceLabel">
+                            </label>
+                        </td>
+                        <td class="ValueTD">
+                            <label id="DifferenceValueLabel">
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a id="TimeCardSummaryCloseButton" data-role="button" onclick="CloseTimeCardSummary();">
+            </a>
+        </div>
+    </div>
+</div>

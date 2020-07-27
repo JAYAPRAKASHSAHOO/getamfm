@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="TechnicianAvailableDetails" class="custScrolling">
+        <script type="text/javascript">
+            $("#TechnicianAvailableDetails").on("pagebeforeshow", function () {
+                hideShowSync();
+                CheckSecurityTokens("#TechnicianAvailableDetails");
+                LoadTranslation("TechnicianAvailableDetails", BindTechnicianAvailableDetailsDropdowns);
+                $('#lblPageName').text(GetTranslatedValue("lblPageName") + " " + getLocal("TechnicianName"));
+                $("#BackUpDetailsUl").addClass('ui-disabled');
+                LoadTechnicianDetails();
+            });
+
+            $("#TechnicianAvailableDetails").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconTechDetails");
+
+				updateBreadcrumb(this.id);
+                var pageID = $.mobile.activePage.attr('id');
+                addPanel();
+            });
+
+            $('#TechnicianAvailableDetails').on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+        </script>
+        <div data-role="header" data-position="fixed" style="top: 0px!important" class="page-header" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="ui-btn-left margin-left min-margin-top">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();">back</a>
+            </div><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039"
+             class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconTechDetails" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+            
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...</div>
+            <form id="frmTechAvailability">
+            <div style="font-weight: bold; text-align: center" class="page-heading">
+                <span id="lblPageName">Technician</span>
+            </div>
+            <div class="form-content-panel">
+                <ul id="StartUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="StartMandatoryLabel" style="color: Red">
+                            *</label>
+                        <label id="StartDateLabel">
+                            Start
+                        </label>
+                        <input type="datetime-local" name="StartDateTextBox" id="StartDateTextBox" onkeypress="return false;" />
+                        <label id="StopMandatoryLabel" style="color: Red">
+                            *</label>
+                        <label id="StopDateLabel">
+                            Stop
+                        </label>
+                        <input type="datetime-local" name="StopDateTextBox" id="StopDateTextBox" onkeypress="return false;" />
+                    </li>
+                </ul>
+                <ul id="ReasonUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="ReasonMandatoryLabel" style="color: Red">
+                            *</label>
+                        <label id="ReasonTextLabel">
+                            Reason
+                        </label>
+                        <textarea id="UnAvailReasonTextArea" name="UnAvailReasonTextArea" rows="20" cols="20"
+                            class="CommentsScrollBar" data-required=""></textarea>
+                    </li>
+                </ul>
+                <label id="UseBackupLabel">
+                    <input type="checkbox" name="UseBackUpCheckBox" id="UseBackUpCheckBox" onchange="ValidateBackUpAssignment();" />Use
+                    Backup Assignment</label>
+                <ul id="BackUpDetailsUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="BackUpDetailsLabel">
+                            BackUp Assignment
+                        </label>
+                        <select name="BackUpDetailsDropDownList" id="BackUpDetailsDropDownList" onchange="BindBackUpDetails()">
+                            <option value="-1">--Select--</option>
+                            <option value="Employee">Employee</option>
+                            <option value="Vendor">Vendor</option>
+                            <option value="SubVar">Sub Var</option>
+                            <option value="UseMatrix">Use Matrix</option>
+                        </select>
+                        <select name="AssignmentListDropDownList" id="AssignmentListDropDownList">
+                            <option value="-1">Select</option>
+                        </select>
+                        <label id="P1P2Label">
+                            <input type="checkbox" name="P1P2CheckBox" id="P1P2CheckBox" />Use For Only P1 and
+                            P2</label>
+                    </li>
+                </ul>
+            </div>
+            <div class="button-panel">
+                <div class="float-left">
+                    <a href="#" id="SubmitButton" class="primary-button" data-role="button" onclick="SaveTechAvailData()">
+                        Submit </a>
+                </div>
+                <div class="float-right">
+                    <a id="ResetButton" href="#" data-role="button" class="secondary-button" onclick="ResetTechFields()">
+                        Reset </a>
+                </div>
+            </div>
+            <input type="hidden" id="hiddenStart" name="hiddenStart" />
+            <input type="hidden" id="hiddenStop" name="hiddenStop" />
+            <input type="hidden" id="hiddenUnAvailreason" name="hiddenUnAvailreason" />
+            <input type="hidden" id="hiddenUseBackUpCheck" name="hiddenUseBackUpCheck" />
+            <input type="hidden" id="hiddenBackUpType" name="hiddenBackUpType" />
+            <input type="hidden" id="hiddenAssignment" name="hiddenAssignment" />
+            <input type="hidden" id="hiddenP1P2" name="hiddenP1P2" />
+             <input type="hidden" id="hiddenBackUpCheck" name="hiddenBackUpCheck" />
+            </form>
+        </div>
+    </div>
+</body>
+</html>

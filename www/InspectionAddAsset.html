@@ -1,0 +1,303 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+  <div data-role="page" id="inspectionAddAsset" class="custScrolling">
+        <link href="css/InspectionStyle.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript">
+            $('#inspectionAddAsset').on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#inspectionAddAsset").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('inspectionAddAsset', AddAsset_TranslationComplete);
+            });
+
+            $('#inspectionAddAsset').on("pageshow", function () {
+				updateBreadcrumb(this.id);
+                addPanel();
+                $('#subGroupDropDown').selectmenu("disable", true);
+                $('#modelDropDown').selectmenu("disable", true);
+                $('#AddNewPartButton').attr("disabled", "disabled");
+                $('#AddNewPartButton').addClass("ui-disabled");
+                CheckingPendingData();
+
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspAddAsset");
+
+                if (!addAsset_addPartEnabled) {
+                    $("[data-role=controlgroup]").controlgroup("refresh");
+                }
+            });
+
+            $('#inspectionAddAsset').on("pageinit", function () {
+                localStorage.setItem("InspectionPageName", "AddAsset");
+
+                var data = iMFMJsonObject({                   
+                    "Username": decryptStr(getLocal("Username"))
+                });
+                var inspectionURL = standardAddress + "Inspection.ashx?methodname=GetAddAssetDetails";
+                LoadGroupDetails(inspectionURL, data);
+            });            
+        </script>
+        <div data-role="header" data-position="fixed" class="page-header" style="top: 0px!important" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="min-margin-top margin-left">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();">back</a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left ui-btn-left shortcut-margin-top" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconInspAddAsset" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p id="addAssetTitle" class="page-heading">    
+            </p>
+            <form id="formAddAsset">
+            <!--<div class="form-section">-->
+                <div class="form-content-panel">
+                    <ul id="EquipPartUl" data-role="listview" data-inset="true" data-field="Equip Part">
+                        <li>
+	                        <label class="mandatory" id="mandatoryGroupLabel">
+                            *</label>
+                            <label  id="groupLabel">                        
+                            </label>
+
+                            <select name="GroupDropDown" id="groupDropDown" class="js-sToken" onchange="LoadSubGroupDetails();">
+                                <option value="-1">-Select-</option>
+                            </select>
+                            <label class="mandatory" id="mandatorySubGroupLabel">
+                                *</label>
+                            <label id="subGroupLabel">
+                            </label>
+                            <select name="SubGroupDropDown" id="subGroupDropDown" class="js-sToken" onchange="LoadModelDetails();">
+                                <option value="-1">-Select-</option>
+                            </select>
+                            <label class="mandatory" id="mandatoryModelLabel">
+                                *</label>
+                            <label id="modelLabel">                        
+                            </label>
+                            <fieldset data-role="controlgroup" data-type="horizontal" class="controlgroup-scanbox">
+                                <select name="ModelDropDown" id="modelDropDown" class="js-sToken">
+                                    <option value="-1">-Select-</option>
+                                </select>
+                                <a href="#" id="AddNewPartButton" data-role="button" data-icon="plus" data-iconpos="notext" data-theme="c" onclick="showNewPartPanel();"></a>
+                            </fieldset>
+                        </li>
+                    </ul>
+                    <ul id="LocationsUl" data-role="listview" data-inset="true" data-field="Location">
+                        <li>
+                            <label id="SPidDDLRequiredFieldLabel" style="color: Red">
+                                *</label>
+                            <label id="OSPidLabel">
+                            </label>
+                            <input type="text" name="SPidTextBox" id="SPidTextBox" onkeyup="BindPidDDL(this.value)" />
+                            <select id="SPidDDL" onchange="FillPropertyDetailsSearch(this.value)">
+                                <option value="-1"></option>
+                            </select>
+                            <div id="LocDiv">
+                                <div id="L1L2PanelDiv">
+                                    <div class="ui-grid-a">
+                                        <div class="ui-block-a  myDivBlockA">
+                                            <label id="SStCityLabel">
+                                            </label>
+                                        </div>
+                                        <div class="ui-block-b myDivBlockB">
+                                            <span id="SStCityValue"></span>
+                                        </div>
+                                    </div>
+                                    <div class="ui-grid-a">
+                                        <div class="ui-block-a myDivBlockA">
+                                            <b>
+                                            <label id="BuildingSectionLabel">
+                                            </label>
+                                            </b>
+                                        </div>
+                                        <div class="ui-block-b myBlockB">
+                                            <span id="SBuildingValue"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <b>
+                                <label id="floorRequiredFieldLabel" class="mandatory">
+                                    *</label>
+                                <label id="SFloorLabel">
+                                </label>
+                                </b>
+                                <select name="SFloorValue" id="SFloorValue" class="js-sToken" onchange="javascript:BindRoomDDL()">
+                                    <option value="-1"></option>
+                                </select>
+                                <b>
+                                <label id="roomRequiredFieldLabel" class="mandatory">
+                                    *</label>
+                                <label id="SRoomLabel">
+                                </label>
+                                </b>
+                                <select name="SRoomValue" id="SRoomValue" class="js-sToken">
+                                    <option value="-1"></option>
+                                </select>
+                            </div>
+                        </li>
+                    </ul>
+                    <ul id="AssetDataUl" data-role="listview" data-inset="true">
+                        <li>
+                            <div id="TagDetailsDiv" data-field="Tag Details">
+                                <label class="mandatory" id="mandatoryTagDetailsLabel">
+                                    *</label>
+                                <label id="tagDetailsLabel">
+                                </label>
+                                <textarea cols="1" rows="8" name="tagDetailsTextArea" id="tagDetailsTextArea"
+                                    maxlength="200" class="CommentsScrollBar js-sToken" ></textarea>
+                            </div>
+                            <div id="BarcodeIDDiv" data-field="Barcode ID">
+                                <label class="mandatory" id="mandatoryBarcodeIDLabel">
+                                    *</label>
+                                <label id="barcodeIDLabel">
+                                </label>
+                                    <div id="barcodeIDScannerBlock" data-enhanced="true" class="ui-input-text ui-body-c ui-corner-all ui-shadow-inset ui-input-has-clear">
+                                    <textarea id="barcodeIDText" name="barcodeIDText" data-enhanced="true" class="ui-input-text ui-body-c ui-corner-all ui-shadow-inset js-sToken" type="text" maxlength="20"></textarea>
+                                    <a id="addAssetBarcodeScan" data-enhanced="true" class="ui-input-clear ui-btn ui-icon-barcode ui-btn-icon-notext ui-corner-all js-sToken" style="background-position:center" tabindex="-1" onclick="readBarcodeToText('barcodeIDText')"></a>
+                                    </div>
+                            </div>
+                            <div id="SerialNumberDiv" data-field="Serial Number">
+                                <label class="mandatory" id="mandatorySerialnumberLabel">
+                                    *</label>
+                                <label id="serialnumberLabel">
+                                </label>
+                                <div data-enhanced="true" class="ui-input-text ui-body-c ui-corner-all ui-shadow-inset ui-input-has-clear">
+                                    <textarea id="serialNumberText" name="SerialNumberText" data-enhanced="true" class="ui-input-text ui-body-c ui-corner-all ui-shadow-inset js-sToken" type="text" maxlength="20"></textarea>
+                                    <a id="addAssetSerialScan" data-enhanced="true" class="ui-input-clear ui-btn ui-icon-barcode ui-btn-icon-notext ui-corner-all js-sToken" style="background-position:center" tabindex="-1" onclick="readBarcodeToText('serialNumberText')"></a>
+                                    </div>
+                            </div>
+                            <div id="InstallDescriptionDiv" data-field="Installed Description">
+                                <label class="mandatory" id="mandatoryInstDescriptionLabel">
+                                   *</label>
+                                <label id="instDescriptionLabel">
+                                </label>
+                                <textarea cols="1" rows="8" name="InstDescriptionTextArea" id="instDescriptionTextArea"
+                                    maxlength="200" class="CommentsScrollBar js-sToken"></textarea>
+                            </div>
+                            <div id="InstallDateDiv" data-field="Installed Date">
+                                <label class="mandatory" id="mandatoryAssetDateInstalledLabel">
+                                    *</label>
+                                <label id="assetDateInstalledLabel">
+                                </label>
+                                <input type="date" id="assetDateInstalledDate" name="AssetDateInstalledDate" class="js-sToken" />
+                            </div>
+                            <div id="ManufacturerContainer" data-field="Manufacturer">
+                                <label class="mandatory" id="mandatoryManufacturerLabel">
+                                    *</label>
+                                <label id="tagManufacturerLabel">
+                                </label>
+                                <textarea cols="1" rows="8" name="ManufacturerTextArea" id="manufacturerTextArea"
+                                    maxlength="80" class="CommentsScrollBar js-sToken" ></textarea>
+                            </div>
+                            <div id="ModelContainer" data-field="Model">
+                                <label class="mandatory" id="mandatoryModelLabel">
+                                    *</label>
+                                <label id="tagModelLabel">
+                                </label>
+                                <textarea cols="1" rows="8" name="ModelTextArea" id="modelTextArea"
+                                    maxlength="120" class="CommentsScrollBar js-sToken" ></textarea>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="button-panel">
+                        <div class="float-left">
+                            <a href="#" id="submitButton" class="primary-button" data-role="button" onclick="AddAsset()">
+                            </a>
+                        </div>
+                        <div class="float-right">
+                            <a id="cancelButton" href="#" data-role="button" class="secondary-button" onclick="navigateToPreviousPage();">
+                            </a>
+                        </div>
+                    </div>
+                    <input type="hidden" id="equipGroupNumberHiddenValue" name="EquipGroupNumberHiddenValue" />
+                    <input type="hidden" id="equipStyleSequenceHiddenValue" name="EquipStyleSequenceHiddenValue" />
+                    <input type="hidden" id="equipGroupDescriptionHiddenValue" name="EquipGroupDescriptionHiddenValue" />
+                    <input type="hidden" id="equipStyleDescriptionHiddenValue" name="EquipStyleDescriptionHiddenValue" />
+                    <input type="hidden" id="equipPartSequenceHiddenValue" name="EquipPartSequenceHiddenValue" />
+                    <input type="hidden" id="customerNumberHiddenValue" name="CustomerNumberHiddenValue" />
+                    <input type="hidden" id="customerSiteNumberHiddenValue" name="CustomerSiteNumberHiddenValue" />
+                    <input type="hidden" id="newPartNumberHiddenValue" name="NewPartNumberHiddenValue" />
+                    <input type="hidden" id="newPartDescriptionHiddenValue" name="NewPartDescriptionHiddenValue" />
+                    <input type="hidden" id="newPartManufacturerHiddenValue" name="NewPartManufacturerHiddenValue" />
+                    <input type="hidden" id="newPartModelHiddenValue" name="NewPartModelHiddenValue" />
+                </div>
+            </form>
+        </div>
+        <div id="addAssetMessagePopUp" data-role="popup" data-theme="c" data-overlay-theme="a"
+            data-dismissible="false" style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c" id="messageDiv">
+                <p id="successAddAssetMessageParagraph">
+                </p>
+                <a href="#" data-role="button" id="addAssetMessagePopUpOKButton" class="primary-button" onclick="navigateToPreviousPage();">
+                    Ok</a>
+            </div>
+        </div>
+        <div id="addPartContentDiv" data-role="popup" data-overlay-theme="a" data-position-to="window" style="width: 260px;height:480px;"
+            data-dismissible="false" tabindex="0">
+            <div data-role="header" class="popup-Header" style="padding-left: 10px; padding-right: 10px">
+                <h1 style="margin: 0px!important;" id="AddPart_PopupLabel">
+                </h1>
+            </div>
+            <a href="#" data-role="button" data-theme="a" id="AddPartCloseButton" data-icon="delete"
+                data-iconpos="notext" data-rel="back" style="float:right;position:absolute;top:-15px;right:-10px"></a>
+            <div id="AddPartDiv" class="ui-block-b" style="position: absolute; padding-left: 5px;
+                padding-right: 5px; width: 100%">
+                <div id="GroupPanel">
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a myDivBlockA">
+                            <label id="newPartGroupLabel">
+                            </label>
+                        </div>
+                        <div class="ui-block-b myDivBlockB">
+                            <span id="NewPartGroupValue"></span>
+                        </div>
+                    </div>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a myDivBlockA">
+                            <label id="newPartSubGroupLabel">
+                            </label>
+                        </div>
+                        <div class="ui-block-b myDivBlockB">
+                            <span id="NewPartSubGroupValue"></span><br />
+                        </div>
+                    </div>
+                    <label class="mandatory" id="mandatoryPartNumberLabel">
+                        *</label>
+                    <label id="newPartNumberLabel">
+                    </label>
+                    <input type="text" id="newPartNumber" name="NewPartNumber" />
+                    <label class="mandatory" id="mandatoryPartDescriptionLabel">
+                        *</label>
+                    <label id="newPartDescriptionLabel">
+                    </label>
+                    <input type="text" id="newPartDescription" name="NewPartDescription" />
+                    <label class="mandatory" id="mandatoryPartManufacturerLabel">
+                        *</label>
+                    <label id="newPartManufacturerLabel">
+                    </label>
+                    <input type="text" id="newPartManufacturer" name="NewPartManufacturer" />
+                    <label class="mandatory" id="mandatoryPartModelLabel">
+                        *</label>
+                    <label id="newPartModelLabel">
+                    </label>
+                    <input type="text" id="newPartModel" name="NewPartModel" />
+                <a data-role="button" id="AddPart_SaveButton" data-theme="b" onclick="SaveNewPart();"
+                    data-inline='true' ></a>
+                <a data-role="button" id="AddPart_CloseButton"
+                    data-theme="b" data-inline="true" onclick="AddPartClose_Click();">
+                </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
