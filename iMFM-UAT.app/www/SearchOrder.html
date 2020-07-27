@@ -1,0 +1,248 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>:: Search Order ::</title>
+</head>
+<body>
+    <div id="SearchOrder" data-role="page" class="custScrolling">
+        <script type="text/javascript">
+
+            $("#SearchOrder").on("pageinit", function () {
+            });
+
+            $("#SearchOrder").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('SearchOrder', null);
+                BindSiteLabels();
+            });
+
+            $("#SearchOrder").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconSearchOrder");
+
+				updateBreadcrumb(this.id, true);
+                var pageID = $.mobile.activePage.attr("id");
+                addPanel();
+                CheckingPendingData();
+                //$("#" + pageID).find("#SearchPageTitle").text("Search Orders");
+                $("#" + pageID).find(".SearchOrderUl").show();
+                var selectPropertyOptionLabel = GetTranslatedValue("SelectPropertyDropDownOptions");
+
+                $("#" + pageID).find("#SPidDDL").html('<option value="-1">' + selectPropertyOptionLabel + '</option>').selectmenu("refresh");                
+                $("#" + pageID).find("#SStCityValue").html(GetCommonTranslatedValue("AllLabel")).val(-1);
+                $("#" + pageID).find("#SBuildingValue").html(GetCommonTranslatedValue("AllLabel")).val(-1);
+                // 12-12-2019   
+                var dateSearchLabel = GetTranslatedValue("DateSearchChk");
+                $("#DateSearchLabel").html(dateSearchLabel);
+
+                $("#" + pageID).find("#SFloorValue").html('<option value="-1">' + GetCommonTranslatedValue("AllLabel") + '</option>').selectmenu("refresh").selectmenu("disable");
+                $("#" + pageID).find("#SRoomValue").html('<option value="-1">'+ GetCommonTranslatedValue("AllLabel") +'</option>').selectmenu("refresh").selectmenu("disable");
+
+                $('#OrderTypeDDL-dialog').find('a').removeClass('ui-btn-left');
+                $('#OrderTypeDDL-dialog').find('a').addClass('ui-btn-right');
+
+                $('#OrderTypeDDL-listbox-popup').find('a').removeClass('ui-btn-left');
+                $('#OrderTypeDDL-listbox-popup').find('a').addClass('ui-btn-right');
+
+                $('#OrderTypeDDL-listbox-screen').addClass('ui-overlay-a');
+                $("#OrderTypeDDL-listbox-popup").attr("data-overlay-theme", "a");
+                //$("#OrderTypeDDL-listbox-popup").attr("data-dismissible", "false");
+                $("#OrderTypeDDL-listbox-popup").bind({
+                    popupafteropen: function (event, ui) {
+                        document.getElementById("OrderTypeDDL-listbox-screen").addEventListener("touchstart", touchHandler, false);
+                        document.getElementById("OrderTypeDDL-listbox-screen").addEventListener("touchmove", touchHandler, false);
+                        document.getElementById("OrderTypeDDL-listbox-screen").addEventListener("touchend", touchHandler, false);
+                        document.getElementById("OrderTypeDDL-listbox-screen").addEventListener("touchcancel", touchHandler, false);
+                        document.getElementById("OrderTypeDDL-listbox-popup").addEventListener("touchmove", touchHandler, false);
+                    }
+                });
+
+                setLocation();
+
+            });
+
+            $("#SearchOrder").on("pagecreate", function () {
+                try {
+                    BindFormPopups(this.id);
+
+                    var myJSONobject = iMFMJsonObject({
+                        "Username": decryptStr(getLocal("Username"))                        
+                    });
+                    $.postJSON(standardAddress + "SearchOrder.ashx?method=PdaSearch", myJSONobject, function (serverDATA) {
+                        loadCompletionDDL(serverDATA.CompletionDDL);
+                        loadOrderTypeDDL(serverDATA.OrderTypeDDL);
+                        loadSortByDDL(serverDATA.WOSortByDDL);
+                        loadCategoryDDL("#SCategoryDDL", serverDATA.CategoryDDL);
+                    });
+
+                    var date = getTodayDate();
+                    $("#SearchOrder").find("#todayDate").val(date);
+                    $("#SearchOrder").find("#SFromDateTextBox").val(date);
+                    $("#SearchOrder").find("#SToDateTextBox").val(date);
+
+                    $("#SearchOrder").find("#SFromDateTextBox").attr("max", date);
+                    $("#SearchOrder").find("#SToDateTextBox").attr("max", date);
+                    $("#SearchOrder").find("#SToDateTextBox").attr("min", date);
+
+                    $("#SearchOrder").find("#setLocLocal").hide();
+
+                    $("#SearchOrder").find("#SFloorValue").html('<option value="-1">' + GetCommonTranslatedValue("AllLabel") + '</option>').selectmenu("refresh").selectmenu("disable");
+                    $("#SearchOrder").find("#SRoomValue").html('<option value="-1">' + GetCommonTranslatedValue("AllLabel") + '</option>').selectmenu("refresh").selectmenu("disable");
+                }
+                catch (e) {
+                }
+
+            });
+        </script>
+        <style>
+            .myDivBlockA
+            {
+                width: 35% !important;
+            }
+            .myDivBlockB
+            {
+                width: 52% !important;
+                word-wrap: break-word !important;
+            }
+            .myBlockB
+            {
+                word-wrap: break-word !important;
+            }
+        </style>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" class="margin-left min-margin-top ui-btn-left"
+                data-iconpos="notext">Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconSearchOrder" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p id="SearchPageTitle" class="page-heading">
+            </p>
+            <input type="hidden" id="HTErrorNoLocation" />
+            <form id="SearchForm">
+            <div class="search-panel">
+                <ul data-role="listview" data-inset="true" id="WONumberDiv" class="SearchOrderUl" data-expected-results="single">
+                    <li>
+                        <label id="SWONumberLabel" style="font-weight: bold">
+                            Work Order Number
+                        </label>
+                        <input type="text" id="SWONumTextBox" name="SWONumTextBox" onkeyup="HideUl(this)" /></li>
+                </ul>
+                <ul data-role="listview" data-inset="true" id="CompletionDiv" class="SearchOrderUl" data-expected-results="multiple">
+                    <li>
+                        <label id="SCompletionLabel">
+                            Order Completion
+                        </label>
+                        <select id="SCompletionDDL" name="SCompletionDDL" data-reset-clear-criteria="false" >
+                        </select>
+                    </li>
+                </ul>
+                <ul data-role="listview" data-inset="true" id="OrderTypeUL" class="SearchOrderUl" data-expected-results="multiple">
+                    <li>
+                        <label id="OrderTypeLabel">
+                            Order Type
+                        </label>
+                        <select id="OrderTypeDDL" name="OrderTypeDDL" multiple="multiple" data-reset-clear-criteria="false" >
+                        </select>
+                    </li>
+                </ul>
+                <ul id="LocationDiv" data-role="listview" data-inset="true" data-expected-results="multiple">
+                    <li>
+                        <label id="OSPidLabel">
+                            Property ID
+                        </label>
+                        <input type="text" name="SPidTextBox" id="SPidTextBox" onkeyup="BindPidDDL(this.value)" />
+                        <select id="SPidDDL" onchange="FillPropertyDetailsSearch(this.value)">
+                            <option value="-1">Select Property</option>
+                        </select>
+                        <div id="LocDiv">
+                            <div class="ui-grid-b">
+                                <div class="ui-block-a  myDivBlockA">
+                                    <label id="SStCityLabel">
+                                    </label>
+                                </div>
+                                <div class="ui-block-b myDivBlockB">
+                                    <span id="SStCityValue">--ALL--</span>
+                                </div>
+                                <div class="ui-block-c" style="position: absolute; right: 1%; width: 13%">
+                                    <a href="#" id="setLocLocal" style="display: block;" onclick="javascript:SetLocLocal()"
+                                        data-role="button" data-icon="home" data-iconpos="notext"></a>
+                                </div>
+                            </div>
+                            <div class="ui-grid-a">
+                                <div class="ui-block-a myDivBlockA">
+                                    <label id="BuildingSectionLabel">
+                                    </label>
+                                </div>
+                                <div class="ui-block-b myBlockB">
+                                    <span id="SBuildingValue">--ALL--</span>
+                                </div>
+                            </div>
+                            <label id="SFloorLabel">
+                            </label>
+                            <select name="SFloorValue" id="SFloorValue" onchange="javascript:BindRoomDDL()" data-reset-clear-criteria="true" data-default-label="all" >
+                                <option value="-1">--ALL--</option>
+                            </select>
+                            <label id="SRoomLabel">
+                            </label>
+                            <select name="SRoomValue" id="SRoomValue" data-reset-clear-criteria="true" data-default-label="all" >
+                                <option value="-1">--ALL--</option>
+                            </select>
+                        </div>
+                    </li>
+                </ul>
+                <ul id="CategoryDiv" data-role="listview" data-inset="true" class="SearchOrderUl" data-expected-results="multiple">
+                    <li>
+                        <label id="SCategoryLabel">
+                            Equipment Group
+                        </label>
+                        <select id="SCategoryDDL" name="SCategoryDDL" data-reset-clear-criteria="false" data-default-label="all" >
+                            <option selected="selected" value="0">--ALL--</option>
+                        </select>
+                    </li>
+                </ul>
+                <ul id="DateBlockDiv" data-role="listview" data-inset="true" class="SearchOrderUl" data-expected-results="multiple">
+                    <li>
+                        <label id="DateSearchLabel">
+                            <input type="checkbox" id="DateSearchChk" name="DateSearchChk" onchange="javascript:HideDate()">Date
+                            Search
+                        </label>
+                        <div id="DateSearchDiv" class="ui-screen-hidden">
+                            <input id="todayDate" name="todayDate" type="date" style="display: none" />
+                            <label id="FromLabel">
+                                From</label>
+                            <input id="SFromDateTextBox" name="SFromDateTextBox" type="date" onchange="javascript:SetSToDateTextBox(this.value);" />
+                            <label id="ToLabel">
+                                To</label>
+                            <input id="SToDateTextBox" name="SToDateTextBox" type="date" />
+                        </div>
+                    </li>
+                </ul>
+                <ul id="SortByDiv" data-role="listview" data-inset="true" class="SearchOrderUl" data-expected-results="multiple">
+                    <li>
+                        <label id="SortByLabel">
+                            Sort By
+                        </label>
+                        <select id="SSortDDL" name="SSortDDL" data-reset-clear-criteria="false">
+                        </select>
+                    </li>
+                </ul>
+            </div>
+            <div class="button-panel">
+                <div class="float-left">
+                    <a id="BottomSearch" href="#" class="primary-button" onclick="javascript:PostSearchData()"
+                        data-role="button" data-theme="b">Search</a></div>
+                <div class="float-right">
+                    <a id="BottomReset" href="javascript:OrderSearchReset()" class="secondary-button"
+                        data-role="button">Reset</a></div>
+            </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

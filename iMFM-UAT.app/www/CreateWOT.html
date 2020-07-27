@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="CreateWOT" data-role="page" class="custScrolling">
+        <script type="text/javascript">
+            $("#CreateWOT").on("pagebeforeshow", function () {
+                hideShowSync();
+
+                //**** Call the Translations
+                LoadTranslation('CreateWOT', LoadAdditionalFormTranslations(this.id));
+                //**** End
+
+                var pageID = "#" + $.mobile.activePage.attr('id');
+
+                var logOutLabel = GetCommonTranslatedValue("LogOutLabel");
+                var selectPropertyOptionLabel = GetTranslatedValue("SelectPropertyDropDownOptions");
+                var selectLabel = GetCommonTranslatedValue("SelectLabel");
+                var ProblemCodeDropDownValue = GetTranslatedValue("ProblemCodeDropDownValue");
+                var ServiceContractLabel = GetTranslatedValue("ServiceContractCoveredLbl");
+
+                //$(pageID).find("#CreateWOTLogoutButton .ui-btn-text").text(logOutLabel);
+                $(pageID).find("#problemCodeDD").html('<option value="-1">' + ProblemCodeDropDownValue + '</option>').selectmenu("refresh");
+                $(pageID).find("#ServiceContractCoveredLabel").text(ServiceContractLabel);
+
+                var SgtCollection = $.GetSecuritySubTokens(MasterID, 0);
+                $(pageID + " #HiddenBuildingCurrency").text('');
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "GroupSubGroupPanel", "CanAccess")) {
+                    $(pageID).find("#GroupSubGroupPanelDiv").hide();
+                }
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "GIPPanel", "CanAccess")) {
+                    $(pageID).find("#GIPPanelUl").hide();
+                }
+                else {
+                    $('#GipPanelSecurityReq').val(0);
+                    for (var i = 0; i < SgtCollection.SgstCollection.length; i++) {
+                        if (SgtCollection.SgstCollection[i].SubTokenDescription == "GIPPanel" && SgtCollection.SgstCollection[i].ReadOnly == 0 && SgtCollection.SgstCollection[i].Required == 0) {
+                            $(pageID + " #EstimatedServiceCostRequriedLabel").hide();
+                            $(pageID + " #CurrencyCodeRequiredLabel").hide();
+                            $(pageID + " #ServiceContractRequiredLabel").hide();
+                            $(pageID + " #CostCenterRequiredLabel").hide();
+                            $(pageID + ' #EstimatedServiceCostText').attr('readonly', 'readonly');
+                            $(pageID + ' #CurrencyCodeSelect').prop("disabled", true);
+                            $(pageID + ' #CostCenterTextBox').attr('readonly', 'readonly');
+                            $(pageID + ' #ServiceContractDropDownList').prop("disabled", true);
+                            $(pageID + ' #ServiceContractCoveredLabel').addClass('ui-disabled');
+                            $(pageID + ' #ServiceContractCovered').addClass('ui-disabled');
+                            $(pageID + ' #CompanyCoveredCheckBox').addClass('ui-disabled');
+                            $(pageID + ' #CompanyCoveredLabel').addClass('ui-disabled');
+
+                            // New field is only editable if panel is not read only.
+                            $(pageID + " #ExtAccountNumberTextBox").attr('readonly', 'readonly');
+                        }
+                        else if (SgtCollection.SgstCollection[i].SubTokenDescription == "GIPPanel" && SgtCollection.SgstCollection[i].Required == 1) {
+                            $(pageID + " #EstimatedServiceCostRequriedLabel").show();
+                            $(pageID + " #CurrencyCodeRequiredLabel").show();
+                            $(pageID + " #EstimatedServiceCostText").attr("Requried", "true");
+                            $(pageID + " #CurrencyCodeSelect").attr("Requried", "true");
+                            $(pageID + ' #EstimatedServiceCostText').removeAttr("readonly");
+                            $(pageID + ' #CurrencyCodeSelect').prop("disabled", false);
+                            $(pageID + ' #ServiceContractCoveredLabel').removeClass('ui-disabled');
+                            $(pageID + ' #ServiceContractCovered').removeClass('ui-disabled');
+                            $(pageID + " #ServiceContractRequiredLabel").show();
+                            $(pageID + " #CostCenterRequiredLabel").show();
+                            $(pageID + " #ServiceContractDropDownList").attr("Requried", "true");
+                            $(pageID + " #CostCenterTextBox").attr("Requried", "true");
+                            $(pageID + ' #CostCenterTextBox').removeAttr("readonly");
+                            $(pageID + ' #ServiceContractDropDownList').prop("disabled", false);
+                            $(pageID + ' #CompanyCoveredCheckBox').removeClass('ui-disabled');
+                            $(pageID + ' #CompanyCoveredLabel').removeClass('ui-disabled');
+                            $(pageID + ' #GipPanelSecurityReq').val(1);
+
+                            // New field is only editable if panel is not read only.
+                            $(pageID + " #ExtAccountNumberTextBox").removeAttr('readonly');
+                        } // end of if
+                        else if (SgtCollection.SgstCollection[i].SubTokenDescription == "GIPPanel" && SgtCollection.SgstCollection[i].Required == 0) {
+                            $(pageID + " #EstimatedServiceCostRequriedLabel").hide();
+                            $(pageID + " #CurrencyCodeRequiredLabel").hide();
+                            $(pageID + " #ServiceContractRequiredLabel").hide();
+                            $(pageID + " #CostCenterRequiredLabel").hide();
+                            $(pageID + ' #EstimatedServiceCostText').removeAttr("readonly");
+                            $(pageID + ' #CurrencyCodeSelect').prop("disabled", false);
+                            $(pageID + ' #ServiceContractCoveredLabel').removeClass('ui-disabled');
+                            $(pageID + ' #ServiceContractCovered').removeClass('ui-disabled');
+                            $(pageID + ' #CostCenterTextBox').removeAttr("readonly");
+                            $(pageID + ' #ServiceContractDropDownList').prop("disabled", false);
+                            $(pageID + ' #CompanyCoveredCheckBox').removeClass('ui-disabled');
+                            $(pageID + ' #CompanyCoveredLabel').removeClass('ui-disabled');
+
+                            // New field is only editable if panel is not read only.
+                            $(pageID + " #ExtAccountNumberTextBox").removeAttr('readonly');
+                        } // end of else if  
+                    } // end of for
+                }
+
+                if (!$.GetSecuritySubTokensBit(SgtCollection, 0, "CAS:ExtAccountNumber", "CanAccess")) {
+                    $(pageID + " #ExtAccountNumberBlock").hide();
+                }
+                else {
+                    $(pageID + " #ExtAccountNumberBlock").show();
+                    if ($(pageID + " #ExtAccountNumberTextBox").attr('readonly') !== 'readonly') {
+                        if ($.GetSecuritySubTokensBit(SgtCollection, 0, "CAS:ExtAccountNumber", "Required")) {
+                            $(pageID + " #ExtAccountRequiredLabel").show();
+                            $(pageID + " #ExtAccountNumberTextBox").attr("data-requried", "true");
+                        }
+                    }
+                }
+
+                $.BindAssignmentDropDown(MasterID, 2, "CanAccess");
+                $(pageID).find("#ddlAssignmentType").attr("data-requried", "true");
+                $(pageID).find("#ddlAssignment").attr("data-requried", "true");
+                $(pageID).find("#problemCodeDD").attr("data-requried", "true");
+                $(pageID).find("#problemDescriptionTextArea").attr("data-requried", "true");
+                BindCurrencyDropDown("CurrencyCodeSelect");
+                BindSiteLabels();
+                SecurityForVendorSearch("Vendor Search", 1);
+                EnforceFieldSecurity(SgtCollection, "OrderType", false);
+                // Need additional checks for OrderType.
+                if ($.GetSecuritySubTokensBit(SgtCollection, 0, "OrderType", "CanAccess")) {
+                    // If enabled, it's sys required.
+                    $('[data-field="OrderType"] .mandatory').show();
+                }
+            });
+
+
+            $("#CreateWOT").on("pageshow", function () {
+				updateBreadcrumb(this.id);
+
+                var pageID = $.mobile.activePage.attr('id');
+                addPanel();
+
+    //            $("#" + pageID).find("#lblPageName").text("Create Work Order for Dispatch");
+                $("#" + pageID).find("#DatabaseID").val(decryptStr(getLocal("DatabaseID")));
+                $("#" + pageID).find("#Username").val(decryptStr(getLocal("Username")));
+                $("#" + pageID).find("#Language").val(getLocal("Language"));
+                $("#" + pageID).find("#EmployeeNumber").val(decryptStr(getLocal("EmployeeNumber")));
+                $("#" + pageID).find("#EmployeeName").val(decryptStr(getLocal("FullName")));
+                $("#" + pageID).find("#hiddenRequestedScreen").val(getLocal("RequestedAction"));
+                
+                $("#" + pageID).find("#ddlAssignment").selectmenu("disable");
+                $("#" + pageID).find("label").css("font-weight", "bold");
+                $("#" + pageID).find("#setLocLocal").hide();
+                $("#" + pageID).find("#TagNumberValue").text(getLocal("TagNumber"));
+                $("#" + pageID).find("#InstallationDescriptionValue").text(getLocal("InstalledDescription"));
+                $("#" + pageID).find("#PartDescriptionValue").text(getLocal("PartDescription"));
+                $("#" + pageID).find("#SStCityValue").text(getLocal("CountryCity"));
+                $("#" + pageID).find("#SBuildingValue").text(getLocal("Building"));
+                $("#" + pageID).find("#SStCityValue").attr("data-value", getLocal("RegionNumber"));
+                $("#" + pageID).find("#SBuildingValue").attr("data-value", getLocal("DivisionNumber"));
+                $("#" + pageID).find("#RFloorValue").text(getLocal("Floor"));
+                $("#" + pageID).find("#RRoomValue").text(getLocal("Area"));
+                $("#" + pageID).find("#SFloorValue").val(getLocal("DistrictNumber"));
+                $("#" + pageID).find("#SRoomValue").val(getLocal("CustomerSiteNumber"));
+                $("#" + pageID).find("#EquipTagNumber").val(getLocal("TagNumber"));
+
+                //setLocation();
+                CheckingPendingData();
+
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconWOT");
+
+                var MSIClientCode = localStorage.getItem("MSIClientCode");
+                if (MSIClientCode == "BP" || MSIClientCode == "UB") {
+                    $('#CostCenterBlock').show();
+                    $('#CompanyCoveredCheckBox').hide();
+                    $('#CompanyCoveredLabel').hide();
+                }
+                else {
+                    $('#CostCenterBlock').hide();
+                }
+            });
+
+            $("#CreateWOT").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#EstimatedServiceCostText").blur(function () {
+                if (parseInt($("#EstimatedServiceCostText").val()) >= 0) {
+                    $("#EstimatedServiceCostText").val(securityError($("#EstimatedServiceCostText")));
+                }
+                else {
+                    $("#EstimatedServiceCostText").val('0.00')
+                }
+            });
+        </script>
+        <style>
+            .myDivBlockA
+            {
+                width: 35% !important;
+            }
+            .myDivBlockB
+            {
+                width: 52% !important;
+                word-wrap: break-word !important;
+            }
+            .myBlockB
+            {
+                word-wrap: break-word !important;
+            }
+        </style>
+        <div data-role="header" data-position="fixed" style="top: 0px!important" class="page-header" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left min-margin-top margin-left">
+                <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext">
+                    Menu</a> <a id="TagBackButton" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();"></a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left ui-btn-left shortcut-margin-top" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconWOT" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    style="display: none" class="min-margin-top margin-right ui-btn-right"></a>
+            <span class="ui-title"></span>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...</div>
+            <form id="frmCreateWO">
+            <div style="font-weight: bold; text-align: center" class="page-heading">
+                <span id="lblPageName"></span>
+            </div>
+            <div class="form-content-panel">
+                <ul id="TagLocationUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="TagNumberLabel"></label>
+                        <label id="TagNumberValue"></label><br />
+                        <label id="InstallationDescriptionLabel"></label>
+                        <label id="InstallationDescriptionValue"></label><br />
+                        <label id="PartDescriptionLabel"></label>
+                        <label id="PartDescriptionValue"></label><br />
+                        <label id="SStCityLabel"></label>
+                        <label id="SStCityValue"></label><br />
+                        <label id="BuildingSectionLabel"></label>
+                        <label id="SBuildingValue"></label><br />
+                        <label id="SFloorLabel"></label>
+                        <label id="RFloorValue"></label><br />
+                        <label id="SRoomLabel"></label>
+                        <label id="RRoomValue"></label><br />
+                    </li>
+                </ul>
+                <ul id="EmployeeNumberUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label for="ddlAssignmentType">
+                            <label id="lblAssignmentTypeMandatorySymbol" style="color: Red">
+                                *</label>
+                            <b>
+                                <label id="lblAssignmentType">
+                                </label>
+                            </b>
+                        </label>
+                        <select name="ddlAssignmentType" id="ddlAssignmentType" onchange="BindAssignmentDropDown()">
+                            <option value="-1">-Select-</option>
+                        </select>
+                        <label for="ddlAssignment">
+                            <label id="lblAssignmentMandatorySymbol" style="color: Red">
+                                *</label>
+                            <b>
+                                <label id="lblAssignment">
+                                </label>
+                            </b>
+                        </label>
+                        <input type="text" name="AssignmentSearch" id="AssignmentSearchTextBox" onkeyup="BindVendorDDL(this.value)" />
+                        <select name="ddlAssignment" id="ddlAssignment" onchange="BindServiceContractDDL()">
+                            <option value="-1">-Select-</option>
+                        </select>
+                    </li>
+                </ul>
+                <ul id="ProblemCodeUl" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="lblProblemCode" for="PCTB">
+                            <b>
+                                <label id="ProblemCodeRequriedLabel" style="color: Red">
+                                    *</label></b></label>
+                        <input id="PCTB" name="PCTB" type="text" maxlength="20" onkeyup="BindProblemCodeDD()" />
+                        <select name="problemCodeDD" id="problemCodeDD" onchange="GetGroupSubgroupData()">
+                            <option value="-1"></option>
+                        </select>
+                        <div id="GroupSubGroupPanelDiv">
+                            <label for="select2" id="lblGroupName">
+                                <b>
+                                    <label id="groupRequiredFieldLabel" style="color: Red">
+                                        *</label>
+                                    <label id="lblGroup">
+                                    </label>
+                                    <label id="groupLabel">
+                                    </label>
+                                </b>
+                            </label>
+                            <br />
+                            <label for="select3" id="lblsubGroupName">
+                                <b>
+                                    <label id="subGroupRequiredFieldLabel" style="color: Red">
+                                        *</label>
+                                    <label id="lblSubGroup">
+                                    </label>
+                                    <label id="subGroupLabel">
+                                    </label>
+                                </b>
+                            </label>
+                        </div>
+                        <br />
+                        <label for="problemDescriptionTA">
+                            <b>
+                                <label id="problemDescriptionRequiredFieldLabel" style="color: Red">
+                                    *</label>
+                                <label id="lblProblemDescription">
+                                </label>
+                            </b>
+                        </label>
+                            <textarea id="problemDescriptionTextArea" name="problemDescriptionTextArea" rows="20"
+                                cols="20" class="CommentsScrollBar"></textarea>
+                    </li>
+                </ul>
+                <ul data-role="listview" data-inset="true" id="GIPPanelUl">
+                    <li>
+                        <!--  <label id="EstimatedServiceCostRequriredLabel" style="color: Red">
+                            *</label>-->
+                        <label id="EstimatedServiceCostLabel" for="EstimatedServiceCost">
+                            <span id="EstimatedServiceCostRequriedLabel" style="color: Red">*</span><b></b></label>
+                        <input id="EstimatedServiceCostText" name="EstimatedServiceCost" type="text" maxlength="20" />
+                        <b>
+                            <label id="CurrencyCodeLabel">
+                                <span id="CurrencyCodeRequiredLabel" style="color: Red">*</span>
+                            </label>
+                        </b>
+                        <select name="CurrencyCodeValue" id="CurrencyCodeSelect">
+                            <option value="-1">--Select--</option>
+                        </select>
+                        <label id="ServiceContractCoveredLabel">
+                            <input type="checkbox" name="ServiceContractCovered" id="ServiceContractCovered" /></label>
+                        <div id="CostCenterBlock">
+                            <b>
+                                <label id="ServiceContractLabel">
+                                    <span id="ServiceContractRequiredLabel" style="color: Red">*</span>
+                                </label>
+                            </b>
+                            <select name="ServiceContractDropDownList" id="ServiceContractDropDownList">
+                                <option value="-1">--Select--</option>
+                            </select>
+                            <label id="CompanyCoveredLabel" for="CompanyCoveredCheckBox">
+                                <b></b>
+                            </label>
+                            <input id="CompanyCoveredCheckBox" name="CompanyCoveredCheckBox" type="checkbox"
+                                onchange="CheckCostCenterRequired()" />
+                            <label id="CostCenterLabel" for="CostCenterTextBox">
+                                <span id="CostCenterRequiredLabel" style="color: Red">*</span><b></b></label>
+                            <input id="CostCenterTextBox" name="CostCenterTextBox" type="text" maxlength="50" />
+                        </div>
+                        <div id="ExtAccountNumberBlock">
+                            <label id="ExtAccountNumberLabel" for="ExtAccountNumberTextBox">
+                                <span id="ExtAccountRequiredLabel" style="color:Red;display:none">*</span>Ext Account
+                            </label>
+                            <input type="text" id="ExtAccountNumberTextBox" name="ExtAccountNumberTextBox" />
+                        </div>
+                    </li>
+                </ul>
+                <ul id="OrderTypeDiv" data-role="listview" data-inset="true" data-field="OrderType">
+                    <li>
+                        <label class="mandatory">
+                            *</label>
+                        <label id="orderTypeLabel">
+                        </label>
+                        <select name="orderTypeDropDown" id="orderTypeDropDown" class="js-sToken">
+                            <option value="-1">-Select-</option>
+                        </select>
+                    </li>
+                </ul>
+            </div>
+            <div class="button-panel">
+                <div class="float-left">
+                    <a href="#" id="SubmitButton" class="primary-button" data-role="button" onclick="SubmitForm()">
+                    </a>
+                </div>
+                <div class="float-right">
+                    <a id="ResetButton" href="#" data-role="button" class="secondary-button" onclick="ResetAssetFields()">
+                    </a>
+                </div>
+            </div>
+            <input type="hidden" id="hiddenRequestedScreen" name="hiddenRequestedScreen" value="Create WO" />
+            <input type="hidden" id="hiddenFieldCityText" name="hiddenFieldCityText" />
+            <input type="hidden" id="hiddenFieldCityValue" name="hiddenFieldCityValue" />
+            <input type="hidden" id="hiddenFieldBuildingValue" name="hiddenFieldBuildingValue" />
+            <input type="hidden" id="hiddenFieldBuildingText" name="hiddenFieldBuildingText" />
+            <input type="hidden" id="hiddenFieldFloorText" name="hiddenFieldFloorText" />
+            <input type="hidden" id="hiddenFieldRoomText" name="hiddenFieldRoomText" />
+            <input type="hidden" id="groupHiddenField" name="groupHiddenField" />
+            <input type="hidden" id="subGroupHiddenField" name="subGroupHiddenField" />
+            <input type="hidden" id="hiddenFieldCreateFail" name="hiddenFieldCreateFail" />
+            <input type="hidden" id="hiddenFieldMandatoryFieldMsg" name="hiddenFieldMandatoryFieldMsg" />
+            <input type="hidden" name="DatabaseID" id="DatabaseID" />
+            <input type="hidden" name="Username" id="Username" />
+            <input type="hidden" name="Language" id="Language" />
+            <input type="hidden" name="EmployeeNumber" id="EmployeeNumber" />
+            <input type="hidden" name="EmployeeName" id="EmployeeName" />
+            <input type="hidden" name="HiddenBuildingCurrency" id="HiddenBuildingCurrency" />
+            <input id="hiddenAssignmentOverride" name="hiddenAssignmentOverride" type="hidden"
+                value="false" />
+            <input type="hidden" name="ProblemCodeCurrencyCode" id="hiddenProblemCodeCurrencyCode" />
+            <input type="hidden" name="ProcessStage" id="hiddenProcessStage" />
+            <input type="hidden" name="GipPanelSecurityReq" id="GipPanelSecurityReq" />
+            <input type="hidden" name="HiddenProblemCodeDesc" id="HiddenProblemCodeDesc" />
+            <input type="hidden" name="EquipTagNumber" id="EquipTagNumber" />
+            <input type="hidden" name="SFloorValue" id="SFloorValue" />
+            <input type="hidden" name="SRoomValue" id="SRoomValue" />
+            <input type="hidden" name="HiddenGPSLocation" id="HiddenGPSLocation" />
+			<input type="hidden" name="HiddenSessionID" id="HiddenSessionID" />
+            <input type="hidden" name="OrderType" id="HiddenOrderType" />
+            </form>
+        </div>
+        <!--<div id="loadingPopupDiv" data-role="popup" data-dismissible="false" data-overlay-theme="a">
+            <h2>
+                <img class="img-ajax-loader" alt="Loading..." />
+            </h2>
+        </div>-->
+        <div id="woSyncPopupDiv" data-role="popup" data-dismissible="false" data-overlay-theme="a">
+            <h3>
+                <label id="Label1">
+                    Synchronising...
+                </label>
+            </h3>
+        </div>
+        <div id="TechnicianAvailableDiv" data-role="popup" data-dismissible="false" data-overlay-theme="a"
+            class="ui-content">
+            <a href="#" data-rel="back" data-role="button" data-theme="a" class="ui-btn-right">Close</a>
+            <div>
+                <div id="AvailablityMessageSpan">
+                </div>
+            </div>
+            <div>
+                <a id="AssignmentYesButton" data-role="button" onclick="TechnicianYes();"></a><a
+                    id="AssignmentNoButton" data-role="button" onclick="TechnicalNo();"></a><a id="AssignToFMButton"
+                        data-role="button" onclick="TechnicalCancel();"></a>
+                <!--<input id="AssignmentCancelButton" type="button" value="Cancel" onclick="TechnicalCancel();" />-->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

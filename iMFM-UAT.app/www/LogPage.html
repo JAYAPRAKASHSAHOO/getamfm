@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="logPage" class="custScrolling">
+        <script>
+            $("#logPage").on("pageinit", function () {
+                if (navigator.onLine) {
+                    LogDetails();
+                }
+                $('#NoLogDiv').hide();
+                //links();
+            });
+
+            $("#logPage").on("pagecreate", function () {
+                try {
+                	BindFormPopups(this.id);
+                }
+                catch (e) {
+                    //log(e);
+                }
+            });
+
+            $("#logPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconLog");
+
+				updateBreadcrumb(this.id);
+                CheckingPendingData();
+            });
+
+            $("#logPage").on("pagebeforeshow", function () {
+                hideShowSync();
+                addPanel();
+                
+                //**** Call the Translations
+                LoadTranslation('logPage', null);
+                //**** End
+
+                $("#LogHTSynchronizeMessage").hide();
+                if (!navigator.onLine) {
+                    BindOfflinelogs();
+                }
+            });
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left min-margin-top margin-left">
+                <!--javascript:ShowMenuItems()-->
+                <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" data-iconpos="notext">
+                    Menu</a> <a id="logBackButton" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();"></a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconLog" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+        <div class="SyncNotification" style="text-align:right;"> 
+            <img class="img-sync" style="vertical-align: middle;"/>Syncing...
+        </div>
+            <p id="LogWONum" class="page-heading">
+            </p>
+            <ul data-role="listview" data-inset="true" class="no-shadow" id="NoLogDiv">
+                <li class="no-records" id="NoLogsLabel">No Logs</li>
+            </ul>
+            <div id="LogHTSynchronizeMessage">
+                You are looking offline logs.</div>
+            <div>
+                <ul data-role="listview" id="LogList" class="log-list" data-inset="false" data-divider-theme="b">
+                </ul>
+            </div>
+            <div class="button-panel">
+                <div class="float-right">
+                    <a href="#" id="logNextButton" class="primary-button" onclick="javascript:GetNextList(this);" data-role="button"
+                        data-nextpage='1'>More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

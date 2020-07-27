@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="inspectionEditAsset" class="custScrolling">
+        <script type="text/javascript">
+            $('#inspectionEditAsset').on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#inspectionEditAsset").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation('inspectionEditAsset', InspectionEditAsset_TranslationComplete);
+            });
+
+            $('#inspectionEditAsset').on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspEdit");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                CheckingPendingData();
+            });
+
+            $('#inspectionEditAsset').on("pageinit", function () {
+                setLocal("InspectionPageName", "EditAsset");
+                $('#dateInstalledValueText').attr("disabled", "disabled");
+
+                if (getLocal("InspectionCapitalButtonRequired") == "false") {
+                    $('#editAssetCapitalButton').hide();
+                }
+
+                var data = iMFMJsonObject({
+                    "EquipTagNumber": getLocal("EquipTagNumber"),
+                    "EquipPartNumber": getLocal("EquipPartNumber"),
+                    "EquipPartSeq": getLocal("EquipPartSequence"),
+                    "Username": decryptStr(getLocal("Username"))                    
+                });
+                $('#equipTagNumberHiddenValue').val(getLocal("EquipTagNumber"));
+
+                var editAssetURL = standardAddress + "Inspection.ashx?methodname=GetEditAssetDetails";
+                LoadEditGroupDetails(editAssetURL, data);
+            });
+
+            $('#editAssetDateInstalledDate').change(function () {
+                $('#dateInstalledValueText').val("");
+                $('#dateInstalledValueText').val($('#editAssetDateInstalledDate').val());
+                $('#dateInstalledHiddenValue').val($('#editAssetDateInstalledDate').val());
+            });            
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important;" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="min-margin-top margin-left">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();">back</a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left ui-btn-left shortcut-margin-top" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconInspEdit" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <p id="eidtAssetTitle" class="page-heading">
+            </p>
+            <form id="formEditAsset">
+            <div class="form-section">
+                <div>
+                    <label id="editGroupLabel">
+                    </label>
+                    <label id="editGroupValueLabel">
+                    </label>
+                </div><br />
+                <div>
+                    <label id="editSubGroupLabel">
+                    </label>
+                    <label id="editSubGroupValueLabel">
+                    </label>
+                </div><br />
+                <div>
+                    <label id="editModelLabel">
+                    </label>
+                    <label id="editModelValueLabel">
+                    </label>
+                </div><br />
+                <div id="dateInstalledValueField">
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%;">
+                            <label class="mandatory" id="mandatoryDateInstalledLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 97%;">
+                            <label id="dateInstalledLabel">
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="text" id="dateInstalledValueText" name="DateInstalledValueText" /></div>
+                </div>
+                <div id="assetDateInstalledField">
+                    <input type="date" id="editAssetDateInstalledDate" name="EditAssetDateInstalledDate" />
+                </div>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 2%;">
+                        <label class="mandatory" id="mandatoryTagConditionLabel">
+                            *</label>
+                    </div>
+                    <div class="ui-block-b" style="width: 97%;">
+                        <label for="tagConditionDropDown" id="tagConditionLabel">
+                            
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <select name="TagConditionDropDown" id="tagConditionDropDown">
+                        <option value="-1">--Select--</option>
+                    </select>
+                </div>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 2%;">
+                        <label class="mandatory" id="mandatoryEditSerialnumberLabel">
+                            *</label>
+                    </div>
+                    <div class="ui-block-b" style="width: 97%;">
+                        <label id="editSerialnumberLabel" for="editSerialNumberText">
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <input id="editSerialNumberText" name="SerialNumberText" maxlength="100" />
+                </div>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 2%;">
+                        <label class="mandatory" id="mandatoryEditInstDescriptionLabel">
+                            *</label>
+                    </div>
+                    <div class="ui-block-b" style="width: 97%;">
+                        <label id="editInstDescriptionLabel"></label>
+                    </div>
+                </div>
+                <div>
+                    <textarea cols="1" rows="8" name="InstDescriptionTextArea" id="editInstDescriptionTextArea"
+                        maxlength="200" class="CommentsScrollBar"></textarea>
+                </div>
+
+                <div id="ManufacturerContainer" data-field="Manufacturer">
+                    <label class="mandatory" id="mandatoryManufacturerLabel">
+                        *</label>
+                    <label id="tagManufacturerLabel">
+                    </label>
+                    <textarea cols="1" rows="8" name="ManufacturerTextArea" id="manufacturerTextArea"
+                        maxlength="80" class="CommentsScrollBar js-sToken" ></textarea>
+                </div>
+                
+                <div id="ModelContainer" data-field="Model">
+                    <label class="mandatory" id="mandatoryModelLabel">
+                        *</label>
+                    <label id="tagModelLabel">
+                    </label>
+                    <textarea cols="1" rows="8" name="ModelTextArea" id="modelTextArea"
+                        maxlength="120" class="CommentsScrollBar js-sToken" ></textarea>
+                </div>
+                <div id="assetExpireDateField">
+                    <label id="AssetExpiryDateLabel" for="lifeCycleExpiryValueLabel">
+                       </label>
+                    <label id="lifeCycleExpiryValueLabel">
+                    </label>
+                </div>
+                <div id="feature1Field">
+                    <label id="feature1Label" for="feature1Text">
+                    </label>
+                    <div><input type="text" id="feature1Text" name="Feature1Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature2Field">
+                    <label id="feature2Label" for="feature2Text">
+                    </label>
+                    <div><input type="text" id="feature2Text" name="Feature2Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature3Field">
+                    <label id="feature3Label" for="feature3Text">
+                    </label>
+                    <div><input type="text" id="feature3Text" name="Feature3Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature4Field">
+                    <label id="feature4Label" for="feature4Text">
+                    </label>
+                    <div><input type="text" id="feature4Text" name="Feature4Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature5Field">
+                    <label id="feature5Label" for="feature5Text">
+                    </label>
+                    <div><input type="text" id="feature5Text" name="Feature5Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature6Field">
+                    <label id="feature6Label" for="feature6Text">
+                    </label>
+                    <div><input type="text" id="feature6Text" name="Feature6Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature7Field">
+                    <label id="feature7Label" for="feature7Text">
+                    </label>
+                    <div><input type="text" id="feature7Text" name="Feature7Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature8Field">
+                    <label id="feature8Label" for="feature8Text">
+                    </label>
+                    <div><input type="text" id="feature8Text" name="Feature8Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature9Field">
+                    <label id="feature9Label" for="feature9Text">
+                    </label>
+                    <div><input type="text" id="feature9Text" name="Feature9Text" maxlength="100" class="CommentsScrollBar" /></div>
+                    
+                </div>
+                <div id="feature10Field">
+                    <label id="feature10Label" for="feature10Text">
+                    </label>
+                    <div><input type="text" id="feature10Text" name="Feature10Text" maxlength="100" class="CommentsScrollBar" /></div>                    
+                </div>
+            </div>
+            <div class="button-panel">
+                <div class="float-left">
+                    <a data-role="button" class="secondary-button" data-inline="true" id="editAssetPictureButton"
+                        data-tablename="InspectionAsset" onclick="NavigateToPicturesScreenFromEditAsset(this);">
+                        </a> <a data-role="button" class="secondary-button" data-inline="true" id="editAssetRetireButton"
+                            onclick="CallToRetireAsset();"></a> 
+                            <a data-role="button" class="secondary-button"
+                                data-inline="true" id="editAssetCapitalButton" onclick="NavigateToCapitalFromEditAsset();"></a>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <img alt="Save" id="editAssetSaveImage" class="img-completed saveCancel"
+                    style="margin-right: 5%;" onclick="EditAsset();" />
+                <img alt="Cancel" id="editAssetCancelImage" class="img-cancel saveCancel"
+                    onclick="NavigateBackToAssets();" />
+            </div>
+            <input type="hidden" id="equipTagNumberHiddenValue" name="EquipTagNumberHiddenValue" />
+            <input type="hidden" id="equipSubGroupNumberHiddenValue" name="EquipSubGroupNumberHiddenValue" />
+            <input type="hidden" id="equipStyleSequenceHiddenValue" name="EquipStyleSequenceHiddenValue" />
+            <input type="hidden" id="equipPartSequenceHiddenValue" name="EquipPartSequenceHiddenValue" />
+            <input type="hidden" id="subGroupHiddenValue" name="SubGroupHiddenValue" />
+            <input type="hidden" id="partHiddenValue" name="PartHiddenValue" />
+            <input type="hidden" id="editAssetCustomerNumberHiddenValue" name="CustomerNumberHiddenValue" />
+            <input type="hidden" id="editAssetCustomerSiteNumberHiddenValue" name="CustomerSiteNumberHiddenValue" />
+            <input type="hidden" id="groupHiddenValue" name="GroupHiddenValue" />
+            <input type="hidden" id="equipGroupNumberHiddenValue" name="EquipGroupNumberHiddenValue" />
+            <input type="hidden" id="tagConditionHiddenValue" name="TagConditionHiddenValue" />
+            <input type="hidden" id="dateInstalledHiddenValue" name="DateInstalledHiddenValue" />
+            <input type="hidden" id="dateExpiredHiddenValue" name="DateExpiredHiddenValue" />
+            </form>
+        </div>
+        <div id="confirmRetirePopUp" data-role="popup" data-theme="c" data-overlay-theme="a"
+            data-dismissible="false" style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c">
+                <p id="inspAssetRetireConfirm">
+                    </p>
+                <div class="button-panel">
+                    <div class="float-left">
+                        <a data-role="button" id="confirmRetirePopUpOkButton" class="primary-button" onclick="RetireAsset();" data-rel="back">
+                            </a>
+                    </div>
+                    <div class="float-right">
+                        <a data-role="button" id="confirmRetirePopUpCancelButton" class="secondary-button" data-rel="back"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="editAssetMessagePopUp" data-role="popup" data-overlay-theme="a" data-dismissible="false"
+            style="max-width: 500px" data-position-to="window">
+            <div data-role="content" data-theme="c" id="messageDiv">
+                <p id="successeditAssetMessageParagraph">
+                </p>
+                <a href="#" data-role="button" id="editAssetMessagePopUpOkButton" class="primary-button" onclick="NavigateBackToAssets();">
+                    </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

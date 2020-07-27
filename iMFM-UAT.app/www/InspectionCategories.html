@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="categoryPage" class="custScrolling">
+        <script type="text/javascript">
+            $("#categoryPage").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#categoryPage").on("pagebeforeshow", function () {
+                $("#divisionDescriptionCateg").html(localStorage.getItem("DivisionDescription"));
+                hideShowSync();
+            });
+
+            $("#categoryPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspCat");
+
+				updateBreadcrumb(this.id);
+                addPanel();
+                LoadTranslation('categoryPage', null);
+                showLoading();
+                if (navigator.onLine) {
+                    var data = iMFMJsonObject({
+                        "RegionNumber": localStorage.getItem("RegionNumber"),
+                        "DivisionNumber": localStorage.getItem("DivisionNumber"),
+                        "Username": decryptStr(localStorage.getItem("Username")),
+                        "InspectionNumber": localStorage.getItem("InspectionNumber"),
+                        "AreaID": localStorage.getItem("AreaId"),
+                        "Category": localStorage.getItem("CategoryId"),
+                        "AreaDescription": localStorage.getItem("AreaName")                        
+                    });
+                    var inspectionURL = standardAddress + "Inspection.ashx?methodname=GetCategories";
+                    CategorySuccess(inspectionURL, data);
+                }
+                else {
+                    ////showError("No network connection. Please try again when network is available.");
+                    showError(GetCommonTranslatedValue("NoNetworkCommon"));
+                }
+                CheckingPendingData();
+            });
+
+            $('#categoryPage').on('pageinit', function () {
+            });        
+        </script>
+        <div data-role="header" data-position="fixed" class="page-header" style="top: 0px!important" data-tap-toggle="false">
+            <a href="javascript:ShowMenuItems()" data-role="button" data-theme="a" data-icon="bars"
+                class="min-margin-top margin-left ui-btn-left" data-iconpos="notext">Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+                <a href="#" data-role="button" id = "settingsIconInspCat" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a><h1>
+                </h1>
+        </div>
+        <div data-role="content" class="content-container">
+            <div class="SyncNotification" style="text-align: right;">
+                <img class="img-sync" style="vertical-align: middle;" />Syncing...
+            </div>
+            <div class="bread-crumb">
+                <a href="#" onclick="NavigateBackToArea();" id="CategoryAreaName" class="breadCrumbLink">
+                </a>
+            </div>
+            <p id="divisionDescriptionCateg" class="page-heading">
+            </p>
+            <div class="inspection-content">
+                <ul data-role="listview" class="inspection-content-list" data-inset="true" id="dynamicCategoryList">
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div data-role="page" id="initialSyncPage" class="custScrolling">
+        <script type="text/javascript">
+            $("#initialSyncPage").on("pagecreate", function () {
+                if (!manualSync) {
+                    try {
+                        $.when(DropandExecute()).done(function () {
+                            if (!manualSync) {
+                                GetOfflineData();
+                            } else {
+                                manualSync = false;
+                            }
+                        });
+                    }
+                    catch (e) {
+                        //log(e);
+                    }
+                }
+            });
+
+            $("#initialSyncPage").on("pagebeforeshow", function () {
+                if (!IsStringNullOrEmpty(getLocal("SSOUser"))) {
+                    if (getLocal("SSOUser") === "true") {
+                        $("#initialSyncLogoutButton").hide();
+                    }
+                }
+
+                LoadTranslation("initialSyncPage", null);
+            });
+        </script>
+        <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important"
+            data-tap-toggle="false">
+            <span class="ui-title"></span><a href="#" data-role="button" id="initialSyncLogoutButton"
+                onclick="logout();" data-theme="a" class="min-margin-top margin-right ui-btn-right">Logout</a>
+        </div>
+        <div data-role="content">
+            <p style="font-weight: Bold; color: #0000FF; text-align: center;" id="initialSyncHeader">
+                Syncing Data...</p>
+            <ul data-role="listview" data-inset="true">
+                <li id="propertyList" class="ui-disabled" onclick="syncPropertyData();"><a href="#">
+                    <h2 id="propertyListLabel">
+                        Property Data
+                    </h2>
+                    <p id="propertySyncStaus">
+                    </p>
+                </a></li>
+                <li id="floorList" class="ui-disabled" onclick="syncFloorData();"><a href="#">
+                    <h2 id="floorListLabel">
+                        Floor Data
+                    </h2>
+                    <p id="floorSyncStaus">
+                    </p>
+                </a></li>
+                <li id="roomList" class="ui-disabled" onclick="syncRoomData();"><a href="#">
+                    <h2 id="roomListLabel">
+                        Room Data
+                    </h2>
+                    <p id="roomSyncStaus">
+                    </p>
+                </a></li>
+                <li id="assignmentList" class="ui-disabled" onclick="syncAssignmentData();"><a href="#">
+                    <h2 id="assignmentListLabel">
+                        Assignment Data
+                    </h2>
+                    <p id="assignmentSyncStaus">
+                    </p>
+                </a></li>
+                <li id="securityList" class="ui-disabled" onclick="syncSecurityData();"><a href="#">
+                    <h2 id="securityListLabel">
+                        Security Data
+                    </h2>
+                    <p id="securitySyncStaus">
+                    </p>
+                </a></li>
+                <li id="workOrderList" class="ui-disabled" onclick="syncWorkorderData();"><a href="#">
+                    <h2 id="workOrderListLabel">
+                        Work Order Data
+                    </h2>
+                    <p id="workOrderSyncStaus">
+                    </p>
+                </a></li>
+                <li id="offlineList" class="ui-disabled" onclick="syncAdditionalOfflineData();"><a
+                    href="#">
+                    <h2 id="offlineListLabel">
+                        Offline Data
+                    </h2>
+                    <p id="offlineSyncStaus">
+                    </p>
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

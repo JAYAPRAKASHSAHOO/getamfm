@@ -1,0 +1,1170 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div id="ActionsPopup" data-role="dialog" data-theme="d" data-overlay-theme="a" data-close-btn="none"
+        style="overflow: auto; width: 100%;" class="custScrolling">
+        <script type="text/javascript">
+            $("#ActionsPopup").on("pagecreate", function () {
+                BinderrorPopup("ActionsPopup");
+                ActionPopupBinding("ActionsPopup");
+                BindConfirmationPopup("ActionsPopup");
+            });
+
+            var dateControler = {
+                currentDate: null,
+                currentStartDate: null
+            }
+
+            $("#ActionsPopup").on("pagebeforeshow", function () {
+                //**** Call the Translations
+                LoadTranslation('ActionsPopup', ActionsPopup_TranslationComplete);
+                //**** End
+
+                ActionPageConfig();
+
+                var SgtCollection = $.GetSecuritySubTokens(400009, 2);
+                CheckSecurityForResolutionCode(SgtCollection);
+                CheckSecurityForFieldPO(SgtCollection);
+                CheckSecurityForConditionAssessment(SgtCollection);
+                CheckSecurityForRefrigerant(SgtCollection);
+                EnforceFieldSecurity(SgtCollection, "Include_Attachments", false);
+                CheckRefrigerant();
+            });
+
+
+            $("#ActionsPopup").on("pageshow", function () {
+                if ($.trim(getLocal("RequestedAction")) == "Complete" || $.trim(getLocal("RequestedAction")) == "Stop") {
+                    isCanvasblank = false;
+                    SignatureCapture("#ActionsPopup");
+                }
+
+                if ($.trim(getLocal("RequestedAction")) == "Complete" || $.trim(getLocal("RequestedAction")) == "Stop") {
+                    $("#signature1").empty();
+                    var CanWidth = $("#signature1").width();
+                    $("#signature1").jSignature({ color: "#000000", "background-color": "#ffffff", height: 200, width: CanWidth });
+                }
+                var today = $('#compDate').val();
+                dateControler.currentDate = today;
+                dateControler.currentStartDate = $("#startLinkDate").val();
+            });
+
+            function clearSig() {
+                $("#signature1").jSignature("clear");
+                isCanvasblank = false;
+            }
+
+            $("#signature1").bind("touchmove", function () {
+                isCanvasblank = true;
+            });
+
+            //To validate DateTime entered in Completion Date field
+            $("#compDate").change(function () {
+                if ($.trim(getLocal("MSIClientCode")) == "IO") {
+                    ValidateDateTime();
+                }
+            });
+
+            $("#startLinkDate").change(function () {
+                if ($.trim(getLocal("MSIClientCode")) == "IO") {
+                    ValidateStartDate();
+                }
+            });
+            $("#addAttchement").val(GetTranslatedValue('WODetailAddAttachmentLink'));
+        </script>
+        <style>
+            .hidden-a-tag
+            {
+                display: none;
+            }
+            .requried-star-icon
+            {
+                color: Red;
+            }
+
+        </style>
+        <div data-role="header" class="popup-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+            <a href="#" data-rel="close" data-role="button" data-theme="a" onclick="javascript:CloseActionPopup()"
+                class="ui-btn-right" id="CloseButton">Close</a>
+            <h1 class="ui-title">
+                <span id="selectedAction"></span>
+            </h1>
+        </div>
+        <div data-role="content">
+            <div id="ETA" class="actionDiv ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="ETADeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="ETADateTimeLabel">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Date & Time
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input id="WOActionETADateTime" type="datetime-local" onkeypress="return false;"
+                            name="WOActionETADateTime" /></div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <a data-role="button" id="SetETALabel" class="hidden-a-tag primary-button">Set ETA</a>
+            </div>
+            <div id="Enroute" class="actionDiv ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="EnrouteDeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="EnrouteDateTimeLabel">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Date & Time
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input id="WOActionEnrouteDateTime" type="datetime-local" onkeypress="return false;"
+                            name="WOActionEnrouteDateTime" />
+                    </div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <a data-role="button" id="SetEnrouteLabel" class="hidden-a-tag primary-button">Set Enroute</a>
+            </div>
+            <div id="Arrived" class="actionDiv ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="ArrivedDeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="ArrivedDateTimeLabel">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Date & Time
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input name="" id="ArrivedDate" type="datetime-local" />
+                    </div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <a id="ArrivalSubmitButton" data-role="button" class="hidden-a-tag primary-button">Set
+                    Arrived </a>
+            </div>
+            <div id="Cancel" class="actionDiv ui-screen-hidden">
+                <a id="cancelButton" data-role="button" class="hidden-a-tag secondary-button">Cancel</a>
+            </div>
+            <div id="Reassign" class="actionDiv ui-screen-hidden">
+                <label id="NoAssignments" style="display: none">
+                    Valid assignments not found.</label>
+                <div id="AssignTypeDIV">
+                    <select id="ReassignAssignTypeDDL" onchange="javascript:LoadAssignmentPickDDL(this)"
+                        data-theme="a">
+                        <option value="-1">Assignment Type</option>
+                        <option value="Employee">Employee</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Vendor">Vendor</option>
+                        <option value="CallCenter">Call Center</option>
+                    </select>
+                </div>
+                <div id="AssignmentPickDIV" class="ui-screen-hidden">
+                    <input type="text" name="AssignmentSearch" id="AssignmentSearchTextBox" onkeyup="BindVendorDDL(this.value)" />
+                    <select id="ReassignAssignmentPickDDL" data-theme="a" onchange="javascript:OnReassignAssignmentPickDDLChange()">
+                        <option value="-1">Assignment</option>
+                    </select>
+                </div>
+                <div id="ReassignAttachments" data-field="Include_Attachments">
+                    <label id="IncludeAttachmentsLbl" for="includeAttachments">
+                        <input type="checkbox" id="includeAttachments" data-iconpos="left" name="IncludeAttachments" class="js-Token" >Include
+                    </label>
+                </div>
+                <input type="hidden" name="PdaSearchComplete" id="PdaSearchComplete" value="Begin" />
+                <a id="ReassignSubmitButton" data-role="button" onclick="javascript:SubmitData('Reassign')"
+                    class="hidden-a-tag primary-button" href="#">Reassign</a>
+            </div>
+            <div id="PreStart" class="actionDiv ui-screen-hidden">
+                <ul data-role="listview" id="StepList" class="log-list" style="margin:0px!important" data-inset="false" data-divider-theme="b">
+                    <li data-role="list-divider">
+                        <span style="font-size: 12px;" id="PreStartLabel">Pre Start Steps</span>
+                        <label id="PreStartCount" ></label>
+                    </li>
+                    <li>
+                        <form id="PreStartForm" data-action="prestart">
+                        <div id="PreStartStepsPane" class="data-list" data-role="collapsible-set" data-inset="false">
+                        </div>
+                        </form>
+                    </li>
+                </ul>
+                <div class="button-panel">
+                    <div class="float-left">
+                        <a href="#" id="PreStartSubmitButton" class="primary-button" data-role="button" onclick="Steps.ValidatePreStartSteps()">Submit
+                        </a>
+                    </div>
+                    <div class="float-right">
+                        <a id="PreStartResetButton" href="#" data-role="button" class="secondary-button" onclick="Steps.ResetPreStartSteps()">Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div id="Start" class="actionDiv  ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="StartDeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="startDateLabel">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Start Date
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input name="startLinkDate" id="startLinkDate" type="datetime-local" />
+                    </div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <a id="startButton" data-role="button" data-theme="b" onclick="SubmitData('Start')"
+                    class="hidden-a-tag">Start</a>
+            </div>
+            <div id="Stop" class="actionDiv ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="StopDeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="stopLabel">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Stop Date:
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input name="stopDate" id="stopDate" type="datetime-local">
+                    </div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <label id="isOrderCompleteLabel">
+                    Order is Completed?
+                </label>
+                <select data-theme="a" data-mini="true" id="stopToggleDropDown" onchange="StopToggleAction()">
+                    <option value="0" selected="selected">Hold</option>
+                    <option value="1">Complete</option>
+                </select>
+                <a id="stopButton" data-role="button" onclick="" class="hidden-a-tag secondary-button">
+                    Stop & Hold</a> <a id="stopcompletebutton" data-role="button" onclick="" class="hidden-a-tag secondary-button">
+                        Stop & Complete</a>
+            </div>
+            <div id="Hold" class="actionDiv ui-screen-hidden">
+                <a id="Holdbutton" data-role="button" onclick="" class="hidden-a-tag primary-button">Hold</a>
+            </div>
+            <div id="Complete" class="actionDiv  ui-screen-hidden">
+                <span class="DeviceTimeLabel" id="CompleteDeviceTimeLabel">The time shown is from your Device.</span><br />
+                <label id="compDateLabel">
+                    Complete Date
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input name="compDate" id="compDate" type="datetime-local">
+                    </div>
+                    <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                        <span class="SiteTZLabel"></span>
+                    </div>
+                </div>
+                <label id="reqCompDesc" style="color: Red">
+                    *</label>
+                <label id="compDescLabel">
+                    Complete Description
+                </label>
+                <textarea id="compDescTextArea" cols="10" rows="10"></textarea>
+                <div id="ResolutionCodeUI">
+                    <br />
+                    <label id="ResolutionCodeRequiredFieldLabel" style="color: Red">
+                        *</label>
+                    <label id="lblResolutionCode">
+                        Resolution Code
+                    </label>
+                    <select name="ResolutionCodeDD" id="ResolutionCodeDD" onchange="GetRCGroupSubgroupData()">
+                        <option value="-1"></option>
+                    </select>
+                    <div id="RCGroupDiv">
+                        <label id="RCGroupLabel">
+                            Group:
+                        </label>
+                        <label id="RCGroupValueLabel">
+                        </label>
+                        <br />
+                    </div>
+                    <div id="RCSubGroupDiv">
+                        <label id="RCSubGroupLabel">
+                            Sub group:
+                        </label>
+                        <label id="RCSubGroupValue">
+                        </label>
+                        <br />
+                    </div>
+                    <br />
+                </div>
+                <div id="CompleteConditionAssessmentPanel">
+                    <label id="CompEquipTagNumberLabel">
+                        Tag:
+                    </label>
+                    <label id="CompEquipTagNumber">
+                    </label>
+                    <br />
+                    <label id="CompEquipTagInstDescrLabel">
+                        Install Descr:
+                    </label>
+                    <label id="CompEquipTagInstDescr">
+                    </label>
+                    <br />
+                    <label id="CompConditionAssessmentRequiredLabel" style="color: Red;display:none;">
+                        *</label>
+                    <label id="CompConditionLabel">
+                        Condition Assessment
+                    </label>
+                    <select data-theme="a" data-mini="true" id="CompConditionDropDown" >
+                        <option value="-1">Condition</option>
+                    </select>
+                </div>
+                <div id="RefrigerantPanel">
+                    <div class="ui-grid-b">
+                        <div class="ui-block-a" style="width:66%;margin-top:3px;padding-top:0.4em;">
+                            <label id="RefrigerantCheckLabel" for="RefrigerantUsedToggles">
+                                Is Refrigerant required?
+                            </label>
+                        </div>
+                        <div class="ui-block-b">
+                            <select id="RefrigerantUsedToggles" name="RefrigerantUsedToggles"
+                                data-role="slider" onchange="CheckRefrigerant();" data-mini="true">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="RefrigerantContainer">
+                        <div class="ui-grid-b">
+                            <div class="ui-block-a" style="width:66%;margin-top:3px;padding-top:0.4em;">
+                                <label id="RefrigerantLeakLabel">
+                                    Leak Found?
+                                </label>
+                            </div>
+                            <div class="ui-block-b">
+                                <select id="RefrigerantLeakToggles" data-role="slider" data-mini="true">
+
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                        </div>                    
+                        <label id="RefrigerantPartRequired" style="color: Red">*</label>
+                        <label id="RefrigerantPartLabel">
+                            Refrigerant
+                        </label>
+                        <select id="RefrigerantDropDown" >
+                            <option value="-1">Select Refrigerant</option>
+                        </select>
+                        
+                        <div class="ui-grid-b">
+                            <div class="ui-block-a" style="width:66%;margin-top:3px;padding-top:0.4em">
+                                <label id="RefrigerantQuantityRequired" style="color: Red">*</label>
+                                <label id="RefrigerantQuantityLabel">
+                                    Quantity (Lbs)
+                                </label>
+                            </div>
+                            <div class="ui-block-b" style="text-align: center">
+                                <input type="number" name="RefrigerantQuantityValue" id="RefrigerantQuantityValue" maxlength="40" />
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                <label id="totalLaborLabel">
+                    Total Labor (hrs):
+                </label>
+                <label id="totalLaborValueLabel">
+                </label>
+                <br />
+                <label id="totalMaterialLabel">
+                    Total Material ($$):
+                </label>
+                <label id="totalMaterialValueLabel">
+                </label>
+                <br />
+                <div id="Signature_Capture" data-required="">
+                <label id="signedByRequiredLabel" style="color: Red">
+                        *</label>
+                    <label id="signedByLabel">
+                        Signed By
+                    </label>
+                    <input type="text" name="signedByValue" id="signedByValue" />
+                    <label id="signatureRequiredLabel" style="color: Red">
+                        *</label>
+                    <label id="signatureLabel">
+                        Please Sign
+                    </label>
+                    <div id="signature1" style="border: 1px solid Black">
+                    </div>
+                    <br />
+                    <a data-role="button" onclick="clearSig()" data-inline="true" class="primary-button">
+                        Clear</a>
+                </div>
+                <div id="LicenseNumber" data-required="">
+                    <label id="licenseNumberRequiredLabel" style="color: Red">
+                        *</label>
+                    <label id="licenseNumberLabel">
+                        License / Compliance #
+                    </label>
+                    <input type="text" name="licenseNumberValue" id="licenseNumberValue" maxlength="40" />
+                </div>
+
+                <br />
+                <a id="completeButton" data-role="button" onclick="SubmitData('Complete')" class="hidden-a-tag primary-button">
+                    Complete</a>
+            </div>
+            <div id="Duplicate" class="actionDiv  ui-screen-hidden">
+                <ul id="LocationDiv" data-role="listview" data-inset="true">
+                    <li>
+                        <label id="OSPidLabel">
+                            <label class="requried-star-icon">
+                                *</label>
+                            Property ID
+                        </label>
+                        <input type="text" name="SPidTextBox" id="SPidTextBox" onkeyup="BindPidDDL(this.value)" />
+                        <select id="SPidDDL" onchange="FillPropertyDetailsSearch(this.value)">
+                            <option value="-1">Select Property</option>
+                        </select>
+                        <div id="LocDiv">
+                            <div class="ui-grid-b">
+                                <div class="ui-block-a  myDivBlockA">
+                                    <label>
+                                        <label class="requried-star-icon">
+                                            *</label>
+                                        <span id="SStCityLabel">St, City:</span>
+                                    </label>
+                                </div>
+                                <div class="ui-block-b myDivBlockB">
+                                    <span id="SStCityValue"></span>
+                                </div>
+                                <div class="ui-block-c" style="position: absolute; right: 1%; width: 15%">
+                                    <a href="#" id="setLocLocal" onclick="javascript:SetLocLocal()" data-role="button"
+                                        data-icon="home" data-iconpos="notext"></a>
+                                </div>
+                            </div>
+                            <div class="ui-grid-a">
+                                <div class="ui-block-a myDivBlockA">
+                                    <label>
+                                        <label class="requried-star-icon">
+                                            *</label><span id="BuildingSectionLabel">Building:</span>
+                                    </label>
+                                </div>
+                                <div class="ui-block-b myBlockB">
+                                    <span id="SBuildingValue"></span>
+                                </div>
+                            </div>
+                            <label>
+                                <label class="requried-star-icon">
+                                    *</label>
+                                <span id="SFloorLabel">Floor</span>
+                            </label>
+                            <select name="SFloorValue" id="SFloorValue" onchange="javascript:BindRoomDDL()">
+                                <option value="-1">--Select--</option>
+                            </select>
+                            <label>
+                                <label class="requried-star-icon">
+                                    *</label>
+                                <span id="SRoomLabel">Room</span>
+                            </label>
+                            <select name="SRoomValue" id="SRoomValue">
+                                <option value="-1">--Select--</option>
+                            </select>
+                        </div>
+                    </li>
+                </ul>
+                <a id="DuplicateButton" data-role="button" class="hidden-a-tag primary-button"><span>
+                    Duplicate</span></a>
+            </div>
+            <div id="AddAttachment" class="actionDiv  ui-screen-hidden">
+                <form action="" method="POST" id="AttachmentForm">
+                <img style="width: 60px; height:60px;" id="smallImage" src="" class="attachment-thumbnail" />
+                <div class="ui-grid-a">
+                    <div class="ui-block-a">
+                        <img style="width: 50px; height: 50px;" onclick="capturePhotoAttachment(Camera.PictureSourceType.CAMERA);" class="img-camera" />
+                    </div>
+                    <div class="ui-block-b">
+                        <img style="width: 50px; height: 50px;" onclick="capturePhotoAttachment(Camera.PictureSourceType.PHOTOLIBRARY);"
+                            class="img-gallery" />
+                    </div>
+                </div>
+                <input id="AttachmentFile" name="AttachmentFile" type="hidden" class="attachment-data" />
+                <textarea name="AddAttachmentComment" id="AddAttachmentComment" maxlength="1000"></textarea>
+                <input type="hidden" name="DatabaseID" id="DatabaseID" />
+                <input type="hidden" name="Username" id="Username" />
+                <input type="hidden" name="Language" id="Language" />
+                <input type="hidden" name="EmployeeNumber" id="EmployeeNumber" />
+                <input type="hidden" name="EmployeeName" id="EmployeeName" />
+                <input type="hidden" name="WorkOrderNumber" id="WorkOrderNumber" />
+                <input type="hidden" name="EquipTagNumber" id="EquipTagNumber" />
+                <input type="button" id="addAttchement" value="Add Attachment" onclick="PostAttachment(this.form)" />
+                <!--<a data-role="button" class="primary-button" id="AttachmentSubmitBtn" onclick="PostAttachment(this.form)">Add Attachment</a>-->
+                <input type="hidden" name="GPSLocation" id="GPSLocation" />
+                <input type="hidden" name="SessionID" id="SessionID" />
+                </form>
+            </div>
+            <div id="SetEquipmentTag" class="actionDiv  ui-screen-hidden">
+                <label id="lblSetEquipmentTag">
+                    <label class="requried-star-icon">
+                        *</label>
+                    Equipment Tag :</label>
+                <br />
+                <fieldset data-role="controlgroup" data-type="horizontal" class="controlgroup-scanbox">
+                    <select id="SetEquipmentTagDropDown" data-theme="a">
+                        <option value='-1'>Select Tag</option>
+                    </select>
+                    <a href="#" id="BarcodeScanner" class="set-equip-tag" data-role="button" data-icon="barcode" data-iconpos="notext" data-theme="a" onclick="scanBarcode();"></a>
+                </fieldset>
+                <a id="SetEquipmentTagButton" data-role="button" class="hidden-a-tag  primary-button">
+                    <span>Set Equipment Tag</span></a>
+            </div>
+            <div id="FieldPO" class="actionDiv  ui-screen-hidden">
+                <div>
+                    <!--Workorder label -->
+                    <label id="FieldPoWONumLabel">
+                        Work Order #:
+                    </label>
+                    <label id="FieldPoWONumValueLabel">
+                        New
+                    </label>
+                </div>
+                <br />
+                <div>
+                    <!--Vendor search-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="FieldPOVendorRequiredLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="FieldPOVendorLabel">
+                                Vendor:
+                            </label>
+                        </div>
+                    </div>
+                    <input type="text" maxlength="30" id="FielPOVendorSearchTextBox" onkeyup="LoadFieldPOVendorList();" />
+                    <select id="FieldPOVendorList" onchange="BindVendorListCC();">
+                        <option value="-1">-Select-</option>
+                    </select>
+                </div>
+                <div>
+                    <!--Price and currency code-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="FieldPOPriceRequiredlabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="FieldPOPricelabel">
+                                Price:
+                            </label>
+                        </div>
+                    </div>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 48%;">
+                            <input max = "9999" id="FieldPOPrice" onkeypress="javascript:return BlockNonNumbersInTextBox(this, event, true, true);" />
+                        </div>
+                        <div class="ui-block-b" style="width: 48%;">
+                            <select id="FieldPOCurrencyCode">
+                                <!--<option value="-1">-Select-</option>-->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <!--GL Account-->
+                    <label for="GLAccountDropDown" id="FieldPOGLAccountLabel">
+                        GL Account:
+                    </label>
+                    <select id="GLAccountDropDown" name="GLAccountDropDown">
+                    </select>
+                </div>
+
+                <div>
+                    <!--PO#-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="FieldPONumberRequiredLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="FieldPONumberLabel">
+                                PO#:
+                            </label>
+                        </div>
+                    </div>
+                    <input type="text" maxlength="20" id="FieldPONumber"/>
+                </div>
+                
+                <div id="FieldPOPCardNumberUI">
+                    <!--PCard #-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="FieldPOPCardNumberRequiredLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="FieldPOPCardNumberLabel">
+                                PCard #:
+                            </label>
+                        </div>
+                    </div>
+                    <input type="text" maxlength="20" id="FieldPOPCardNumber"/>
+                </div>
+                
+                <div>
+                    <!--Description-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="FieldPODescriptionRequiredLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="FieldPODescriptionLabel">
+                                Description:
+                            </label>
+                        </div>
+                    </div>
+                    <textarea cols="1" rows="8" maxlength="510" class="CommentsScrollBar" id="FieldPODescription"></textarea>
+                </div>
+                <form>
+                <div>
+                    <!--Create PO-->
+                    <label id="CreatePOCheckBoxLabel" for="createPOCheckBox">
+
+                        <input type="checkbox" id="createPOCheckBox" name="CreatePOCheckBox" />Create PO on Post
+                    </label>
+
+                </div>
+                <div id="FieldPOAttachmentPanelUI">
+                    <label id="attachmentCheckLabel" for="AttachmentRequiredCheckBox">
+                        <input id="AttachmentRequiredCheckBox" name="AttachmentRequiredCheckBox" type="checkbox"
+                        onchange="CheckAttachmentRequired()" /></label>
+                    <div id="CreateAttachmentContainer" style="display:none;">
+                        <div class="ui-grid-a">
+                            <div class="ui-block-a" style="text-align: center">
+                                <img class="img-camera" onclick="capturePhotoAttachment(Camera.PictureSourceType.CAMERA);" />
+                            </div>
+                            <div class="ui-block-b" style="text-align: center">
+                                <img class="img-gallery" onclick="capturePhotoAttachment(Camera.PictureSourceType.PHOTOLIBRARY);" />
+                            </div>
+                        </div>
+                        <div class="ui-grid-a" style="margin-top: 5%;">
+                            <div class="ui-block-a" style="width: 80%;">
+                                <img src="" id="workOrderAttachment" class="attachment-thumbnail" width="160px" height="160px" />
+                            </div>
+                            <div class="ui-block-b" style="width: 20%;">
+                                <img class="img-delete attachment-thumbnail-clear" id="clearAttachmentSource" onclick="clearWorkOrderAttachment();" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </form>
+                <a href="#" class="primary-button" data-role="button" id="FieldPOSubmitButton" onclick="CreateFieldPO();">Post
+                </a>
+            </div>
+            <div id="PhoneFix" class="actionDiv  ui-screen-hidden">
+            <div>
+                    <!--PhoneFixDescription#-->
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 2%; margin-right: 2%">
+                            <label class="requried-star-icon" id="PhoneFixDescriptionRequiredLabel">
+                                *</label>
+                        </div>
+                        <div class="ui-block-b" style="width: 95%;">
+                            <label id="PhoneFixDescriptionLabel">
+                                Completion Description
+                            </label>
+                        </div>
+                    </div>
+                    <textarea  id="PhoneFixDescription" maxlength="1000"></textarea>
+                </div>
+                <div>
+                    <label id="PhoneFixCommentsLabel">
+                        Comments
+                    </label>
+                    <textarea id="PhoneFixComments" cols="10" rows="10" maxlength="1000"></textarea>
+                </div>
+                <a href="#" id="PhoneFixButton" class="primary-button" data-role="button" onclick="PhoneFixConfirm();">Phone
+                    Fix </a>
+            </div>
+            <div id="PreApproval" class="actionDiv  ui-screen-hidden">
+                <div id="currenApprovalDiv">
+                    <!--<p>Current Approval Chain</p>-->
+                    <p id="currentApprovalCode">
+                        <b>Current Approval Code:</b>
+                    </p>
+                </div>
+                <div id="CurrentApproverDetails">
+                    <!--Current approver list-->
+                </div>
+                <div>
+                    <!--Approval code-->
+                    <label for="PreApprovalCode" id="PreApprovalCodeLabel">
+                        <b>Change Approval Code:</b>
+                    </label>
+                    <select id="PreApprovalCode" name="PreApprovalCode" onchange="GetApproverDetails('PreApproval');">
+                        <option value='-1'>-Select-</option>
+                    </select>
+                </div>
+                <div id="NewApprovalDetail">
+                    <!--New approver list-->
+                </div>
+                <div id="NoPreApproverMessageDiv" style="display:none">
+                    <p id="NoPreApproverMessage">
+                        No Approvers exist. Please select a Approval code with Approvers
+                    </p>
+                </div>
+                <a href="#" class="primary-button" id="PreApprovalSaveButton" data-role="button"
+                    onclick="AttachApprovalCode('PreApproval');">Save </a>
+            </div>
+            <div id="InvoiceApproval" class="actionDiv  ui-screen-hidden">
+                <div id="InvoiceCurrentApprovalDiv">
+                    <!--<p>Current Approval Chain</p>-->
+                    <p id="InvoiceCurrentApprovalCode">
+                        <b>Current Approval Code:</b>
+                    </p>
+                </div>
+                <div id="InvoiceCurrentApproverDetails">
+                    <!--Current approver list-->
+                </div>
+                <div>
+                    <!--Approval code-->
+                    <label for="InvoiceApprovalCode" id="InvoiceApprovalCodeLabel">
+                        <b>Approval Code:</b>
+                    </label>
+                    <select id="InvoiceApprovalCode" name="InvoiceApprovalCode" onchange="GetApproverDetails('InvoiceApproval');">
+                        <option value='-1'>-Select-</option>
+                    </select>
+                </div>
+                <div id="InvoiceNewApprovalDetail">
+                    <!--New approver list-->
+                </div>
+                <div id="NoInvoiceApproverMessageDiv" style="display: none">
+                    <p id="NoInvoiceApproverMessage">
+                        No Approvers exist. Please select a Approval code with Approvers
+                    </p>
+                </div>
+                <a href="#" class="primary-button" id="InvoiceApprovalSaveButton" data-role="button"
+                    onclick="AttachApprovalCode('InvoiceApproval');">Save </a>
+            </div>
+            <div id="NTEApproval" class="actionDiv  ui-screen-hidden">
+                <div id="NTEApprovalDiv">
+                    <!--<p>Current Approval Chain</p>-->
+                    <p id="CurrentNTEApprovalCode">
+                        <b>Current Approval Code:</b>
+                    </p>
+                </div>
+                <div id="CurrentNTEApproverDetails">
+                    <!--Current approver list-->
+                </div>
+                <div>
+                    <!--Approval code-->
+                    <label for="NTEApprovalCode" id="NTEApprovalCodeLabel">
+                        <b>Change Approval Code:</b>
+                    </label>
+                    <select id="NTEApprovalCode" name="NTEApprovalCode" onchange="GetApproverDetails('NTEApproval');">
+                        <option value='-1'>-Select-</option>
+                    </select>
+                </div>
+                <div id="NewNTEApproverDetails">
+                    <!--New approver list-->
+                </div>
+                <div id="NoNTEApproverMessageDiv" style="display: none">
+                    <p id="NoNTEApproverMessage">
+                        No Approvers exist. Please select a Approval code with Approvers
+                    </p>
+                </div>
+                <a href="#" class="primary-button" id="NTEApprovalSaveButton" data-role="button"
+                    onclick="AttachApprovalCode('NTEApproval');">Save </a>
+            </div>
+			            <div id="NTEIncrease" class="actionDiv  ui-screen-hidden">
+                <div id="NTEIncreaseDiv">
+                    <!--<p>Current Approval Chain</p>-->
+                    <label id="CurrentNTE" style="padding-left: 4%">
+                        Current NTE:
+                    </label>
+                    <br />
+                </div>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 100%;">
+                        <label style="color: Red" id="ProposedNTERequired">
+                            *</label>
+                        <label id="ProposedNTE">
+                            Proposed NTE:
+                        </label>
+                        <br />
+                        <input type="number" max="9999" id="ProposedNTEValue" onkeyup="CheckDelegationOfAuthority();" />
+                    </div>
+                </div>
+                <div class="ui-grid-a" id="ApprovalDropDownMainDiv">
+                    <div class="ui-block-a" style="width: 100%;">
+                        <label id="ApproverRequired" style="color: Red">
+                            *
+                        </label>
+                        <label id="ApproverList">
+                            Send Approval Request to:
+                        </label>
+                        <br />
+                        <input type="text" max="100" id="SearchApproverNameTextBox" onkeyup="LoadNTEIncreaseApprovers();" />
+                        <select id="ApproverListDropDown" onchange="BindNTEDropDownData();">
+                            <option value="-1">Select</option>
+                        </select>
+                    </div>
+                </div>
+                <br />
+                <label id="NTEComments">
+                    Comments:
+                </label>
+                <textarea id="NTECommentsTextarea" cols="10" rows="10" style="width: 100%"></textarea>
+                <a id="NTESubmitButton" data-role="button" class="primary-button" href="#" onclick="SubmitNTEIncrease();">
+                    Submit</a>
+            </div>
+			<div id="EditAsset" class="actionDiv  ui-screen-hidden">
+                <div id="InstDescrContainer" data-field="Installed Description">
+                    <label id="reqInstDescr" class="mandatory">
+                        *</label>
+                    <label id="instDescrLabel">
+                        Installation Description
+                    </label>
+                        <textarea id="instDescrTextArea" cols="10" rows="10" class="js-sToken"></textarea>
+                </div>
+                <label id="installDateLabel">
+                    Installation Date
+                </label>
+                <div class="ui-grid-a">
+                    <div class="ui-block-a" style="width: 75%">
+                        <input name="installDate" id="installDate" type="date">
+                            </div>
+                </div>
+                <div id="SerialNumberContainer" data-field="Serial Number">
+                    <label id="reqSerialNumber" class="mandatory">
+                        *</label>
+                    <label id="serialNumberLabel">
+                        Serial Number
+                    </label>
+                    <div data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset ui-input-has-clear">
+                            <textarea id="serialNumberTextArea" type="text" maxlength="100" data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset js-sToken"></textarea>
+                        <a id="editAssetSerialScan" data-enhanced="true" tabindex="-1" onclick="readBarcodeToText('serialNumberTextArea')"
+                            class="ui-input-clear ui-btn ui-icon-barcode ui-btn-icon-notext ui-corner-all" style="background-position:center"></a>
+                    </div>
+                </div>
+                <div id="BarcodeIDContainer" data-field="Barcode ID">
+                    <label id="reqBarcodeID" class="mandatory">
+                        *</label>
+                    <label id="barcodeIDLabel">
+                        Barcode ID
+                    </label>
+                    <div data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset ui-input-has-clear">
+                            <textarea id="barcodeIDTextArea" type="text" maxlength="100" data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset js-sToken"></textarea>
+                        <!--<a data-role="button" data-icon="barcode" data-iconpos="notext" onclick="scanBarcode()"></a>-->
+                        <a id="editAssetBarcodeScan" data-enhanced="true" class="ui-input-clear ui-btn ui-icon-barcode ui-btn-icon-notext ui-corner-all" style="background-position:center" tabindex="-1" onclick="readBarcodeToText('barcodeIDTextArea')"></a>
+                     </div>
+                </div>
+                <div id="TagDetailsContainer" data-field="Tag Details">
+                    <label id="reqTagDetails" class="mandatory">
+                        *</label>
+                    <label id="tagDetailsLabel">
+                        Tag Details
+                    </label>
+                        <textarea id="tagDetailsTextArea" class="js-sToken" cols="10" rows="10"></textarea>
+                </div>
+                <div id="ManufacturerContainer" data-field="Manufacturer">
+                    <label class="mandatory" id="mandatoryManufacturerLabel">
+                        *</label>
+                    <label id="tagManufacturerLabel">
+                    </label>
+                    <textarea cols="1" rows="8" name="ManufacturerTextArea" id="manufacturerTextArea"
+                        maxlength="80" class="CommentsScrollBar js-sToken" ></textarea>
+                </div>
+                <div id="ModelContainer" data-field="Model">
+                    <label class="mandatory" id="mandatoryModelLabel">
+                        *</label>
+                    <label id="tagModelLabel">
+                    </label>
+                    <textarea cols="1" rows="8" name="ModelTextArea" id="modelTextArea"
+                        maxlength="120" class="CommentsScrollBar js-sToken" ></textarea>
+                </div>
+                <div id="NotesContainer" data-field="Notes">
+                    <label id="reqNotes" class="mandatory">
+                        *</label>
+                    <label id="notesLabel">
+                        Notes
+                    </label>
+                    <textarea id="notesTextArea" cols="10" rows="10" class="js-sToken"></textarea>
+                </div>
+                <a id="editAssetButton" data-role="button" onclick="SubmitData('EditAsset')" class="hidden-a-tag primary-button">
+                    Submit</a>
+            </div>
+            <div id="ConditionAssessment" class="actionDiv  ui-screen-hidden">
+                <label id="reqCondition" style="color: Red">
+                    *</label>
+                <label id="conditionLabel">
+                    Cond
+                </label>
+                <select data-theme="a" data-mini="true" id="conditionDropDown" >
+                    <option value="-1">Condition</option>
+                </select>
+                <label id="conditionNotesLabel">
+                    Notes
+                </label>
+                <textarea id="conditionNotesTextArea" cols="10" rows="10"></textarea>
+                <a id="conditionAssessmentButton" data-role="button" onclick="SubmitData('ConditionAssessment')" class="hidden-a-tag primary-button">
+                    Submit</a>
+            </div>
+            <div id="SetSource" class="actionDiv  ui-screen-hidden">
+                <div id="SourceContainer" data-field="Source">
+                    <label class="mandatory" id="mandatorySourceLabel">
+                        *</label>
+                    <label id="SourceLabel">
+                    </label>
+                    <select id="SourceDropDown" class="js-sToken" data-theme="a" onchange="javascript:UpdateSource()">
+                        <option value='-1'>Select Source</option>
+                    </select>
+                </div>
+                <div id="CallerNameContainer" data-field="Caller Name">
+                    <label class="mandatory" id="mandatoryCallerNameLabel">
+                        *</label>
+                    <label id="CallerNameLabel">
+                    </label>
+                    <input type="text" name="CallerNameValue" id="CallerNameValue" class="js-sToken" maxlength="90" />
+                </div>
+                <div id="ReasonForChangeContainer" data-field="Reason">
+                    <label class="mandatory" id="mandatoryReasonForChangeLabel">
+                        *</label>
+                    <label id="ReasonForChangeLabel">
+                    </label>
+                    <input type="text" name="ReasonForChangeValue" id="ReasonForChangeValue" class="js-sToken" maxlength="200" />
+                </div>
+                <a id="SetSourceButton" data-role="button" onclick="SubmitData('SetSource')" class="hidden-a-tag primary-button">
+                    Submit</a>
+            </div>
+            <div id="MaterialPO" class="actionDiv ui-screen-hidden">
+                <div id="PartContainer" data-field="EquipPartNumber">
+                    <label id="PartSearch">
+                        Part #
+                    </label>
+                    <div data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset ui-input-has-clear">
+                        <textarea id="equipPartNumberTextArea" type="text" maxlength="50" data-enhanced="true" class="ui-input-text ui-body-d ui-corner-all ui-shadow-inset" onkeyup="javascript:Inventory.LoadPartNumber(this)"></textarea>
+                        <a id="materialPOEquipPartNumberScan" data-enhanced="true" tabindex="-1" onclick="readBarcodeToText('equipPartNumberTextArea')"
+                            class="ui-input-clear ui-btn ui-icon-barcode ui-btn-icon-notext ui-corner-all" style="background-position:center"></a>
+                    </div>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width:2%">
+                            <label class="mandatory" id="mandatoryPartLabel">*</label>
+                        </div>
+                        <div class="ui-block-b" style="width:98%">
+                            <select id="EquipPartNumberDropDown" class="js-sToken" data-search="equipPartNumberTextArea" data-theme="a" onchange="javascript:Inventory.LoadWarehouseData(this)">
+                                <option value='-1'>Select Part</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="WarehouseBinContainer">
+                    <div class="ui-grid-a" data-field="WarehouseNumber" style="display:none">
+                        <div class="ui-block-a" style="width:2%">
+                            <label class="mandatory" id="mandatoryWarehouseNumberLabel">*</label>
+                        </div>
+                        <div class="ui-block-b" style="width:98%">
+                            <select id="WarehouseNumberDropDown" class="js-sToken" data-theme="a" data-search="EquipPartNumberDropDown" onchange="javascript:Inventory.LoadBinData(this)">
+                                <option value='-1'>Select Warehouse</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ui-grid-a" data-field="BinNumber" style="display:none">
+                        <div class="ui-block-a" style="width:2%">
+                            <label class="mandatory" id="mandatoryBinNumberLabel">*</label>
+                        </div>
+                        <div class="ui-block-b" style="width:98%">
+                            <select id="BinNumberDropDown" class="js-sToken" data-theme="a" data-search="WarehouseNumberDropDown" onchange="javascript:Inventory.LoadSerialNumberData(this)">
+                                <option value='-1'>Select Bin</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="SerialNumberContainer" data-field="SerialNumber" style="display:none" class="ui-grid-a">
+                    <div class="ui-block-a" style="width:2%">
+                        <label id="reqSerialNumber" class="mandatory" >
+                        *</label>
+                    </div>
+                    <div class="ui-block-b" style="width:98%">
+                        <select id="SerialNumberDropDown" class="js-sToken" data-theme="a" data-search="BinNumberDropDown" onchange="javascript:Inventory.LoadPartData(this)">
+                            <option value='-1'>Select Serial #</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="QuantityContainer">
+                    <div id="QuantityOnHandContainer" data-field="QuantityOnHand" class="ui-grid-a" style="display:none">
+                        <div class="ui-block-a" style="margin-top:3px;padding-top:0.4em;">
+                            <!--<label class="mandatory" id="mandatoryQuantityOnHandLabel">*</label>-->
+                            <label id="QuantityOnHandLabel">
+                                On Hand
+                            </label>
+                        </div>
+                        <div class="ui-block-b">
+                            <input type="number" maxlength="5" id="QuantityOnHandText" class="js-sToken" readonly="readonly" />
+                        </div>
+                    </div>
+                    <div id="QuantityUsedContainer" data-field="Quantity" class="ui-grid-a">
+                        <div class="ui-block-a" style="margin-top:3px;padding-top:0.4em;">
+                            <label class="mandatory" id="mandatoryQuantityLabel">*</label>
+                            <label id="QuantityLabel">
+                                Qty
+                            </label>
+                        </div>
+                        <div class="ui-block-b">
+                            <input type="number" maxlength="5" id="QuantityText" class="js-sToken" />
+                        </div>
+                        <!-- Possible Unit of Measure field -->
+                    </div>
+                </div>
+                <div id="PriceContainer" data-field="PricePerUnit">
+                    <label class="mandatory" id="mandatoryPriceLabel">*</label>
+                    <label id="PricePerUnitLabel">
+                        Price
+                    </label>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a">
+                            <input max = "9999" type="number" id="materialPOPrice" class="js-sToken" onkeypress="javascript:return BlockNonNumbersInTextBox(this, event, true, false);" />
+                        </div>
+                        <!--<div class="ui-block-b" style="width: 48%;">-->
+                         <div class="ui-block-b">
+                            <div data-field="CurrencyCode">
+                                <select id="materialPOCurrencyCode" class="js-sToken">
+                                    <!--<option value="-1">-Select-</option>-->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a id="SubmitMaterialPOButton" data-role="button" onclick="Inventory.SubmitForm('MaterialPO')" class="primary-button">
+                    Create PO</a>
+            </div>
+            <div id="ReliabilityData" class="actionDiv  ui-screen-hidden">
+                <div>
+                    <label id="reqProblem" style="color: Red">
+                    *</label>
+                    <label id="ReliabilityProblemLabel">
+                        Prob
+                    </label>
+                    <select data-theme="a" data-mini="true" id="ReliabilityProblemDropDown" data-dropdown-result="ProblemID" >
+                        <option value="-1">Select Problem</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="reqCause" style="color: Red">
+                        *</label>
+                    <label id="ReliabilityCauseLabel">
+                        Cause!
+                    </label>
+                    <select data-theme="a" data-mini="true" id="ReliabilityCauseDropDown" data-dropdown-result="CauseID" >
+                        <option value="-1">Select Cause</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="reqResolution" style="color: Red">
+                        *</label>
+                    <label id="ReliabilityResolutionLabel">
+                        Res
+                    </label>
+                    <select data-theme="a" data-mini="true" id="ReliabilityResolutionDropDown" data-dropdown-result="ResolutionID" >
+                        <option value="-1">Select Resolution</option>
+                    </select>
+                </div>
+                <a id="reliabilityDataButton" data-role="button" onclick="SubmitData('ReliabilityData')" class="hidden-a-tag primary-button">
+                    Save Data</a>
+            </div>
+            <div id="ChangePriority" class="actionDiv ui-screen-hidden">
+                <div class="ui-grid-a" data-field="ChangePriorityDropDown">
+                    <div class="ui-block-a" style="width:5%; margin-top: 4%">
+                        <label class="mandatory">
+                        *</label>
+                    </div>
+                    <div class="ui-block-b" style="width:95%">
+                        <select data-theme="a" data-mini="true" id="PriorityDropDown" class="js-sToken" onchange="calculatePriorityTarget(this);">
+                            <option value="-1">Select</option>
+                        </select>
+                    </div>
+                </div>
+                <div data-field="ChangePriorityResponseTarget">
+                    <label class="mandatory">
+                        *</label>
+                    <label id="responseTargetLabel">
+                        Response Target:
+                    </label>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 75%">
+                            <input name="responseTargetDate" id="responseTargetDate" type="datetime-local" class="js-sToken" />
+                                </div>
+                        <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                            <span class="SiteTZLabel">EST</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-field="ChangePriorityCompletionTarget">
+                    <label class="mandatory">
+                        *</label>
+                    <label id="completionTargetLabel">
+                        Completion Target:
+                    </label>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="width: 75%">
+                            <input name="completionTargetDate" id="completionTargetDate" type="datetime-local" class="js-sToken" />
+                                </div>
+                        <div class="ui-block-b" style="width: 25%; margin-top: 8%;">
+                            <span class="SiteTZLabel">EST</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <a id="changePriorityButton" data-role="button" onclick="SubmitData('ChangePriority');" class="hidden-a-tag primary-button"> Change Priority </a>
+            </div>
+            <div id="AddComment" class="actionDiv  ui-screen-hidden">
+            	<label id="commentstarIcon" class="requried-star-icon">
+                	*</label>
+                <label id="AddCommentsLabel">
+                    <!--<span id="commentstarIcon" class="requried-star-icon">*</span>-->
+                    Comment
+                </label>
+                <br />
+                <div id="CommentDDLDiv">
+                    <select id="AddCommentDDL" data-theme="a" class="commentDDL" onchange='if(this.value!="-1"){$("#AddCommentLabelTA").val(this.value)}else{$("#AddCommentLabelTA").val("")}'>
+                        <option value="-1">-Select-</option>
+                    </select>
+                </div>
+                <textarea id="AddCommentLabelTA" cols="10" rows="10" maxlength="1000"></textarea>
+                <a data-role="button" class="hidden-a-tag  primary-button">Add Comment</a> <a id="AddCommentSubmitButton"
+                    data-role="button" class="show-page-loading-msg  primary-button" onclick="javascript:SubmitData()">
+                    Add Comment</a>
+            </div>
+            <div data-role="popup" data-dismissible="false" id="WillbeprocessedonsyncDiv" data-overlay-theme="a"
+                style="width: 300px" data-transition="pop">
+                <!--<h4 style='text-align: center'>
+                    Alert</h4>-->
+                <div style='text-align: center;margin-top:3%;margin-bottom:3%' id="AlertMessageText1">
+                    Will be Processed on Synchronization.
+                </div>
+                <a href="#" data-rel="close" onclick="javascript:CloseActionPopup()" class="primary-button"
+                    data-role="button" id="okLabel1">OK</a>
+            </div>
+            <div data-role="popup" data-dismissible="false" id="AlertMessage" data-overlay-theme="a"
+                style="width: 300px" data-transition="slidedown">
+                <h4 style='text-align: center'>
+                    Alert</h4>
+                <div style='text-align: center' id="AlertMessageText2">
+                    Will be Processed on Synchronization.
+                </div>
+                <a href="#" data-rel="close" onclick="javascript:CloseActionPopup()" class="primary-button"
+                    data-role="button" id="okLabel2">OK</a>
+            </div>
+            <div data-role="popup" data-dismissible="false" id="FieldPOSuccessPopup" data-overlay-theme="a"
+                style="width: 300px" data-transition="pop">
+                <div id="FieldPOSuccessLabel" data-role="header" class="popup-Header">
+                    Field PO Material
+                </div>
+                <div id="FieldPOSuccessMessage">
+                </div>
+                <a href="#" class="primary-button fieldpo-success"
+                    data-role="button" id="okLabel3">OK</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

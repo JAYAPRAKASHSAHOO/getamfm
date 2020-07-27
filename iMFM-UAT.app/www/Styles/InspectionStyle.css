@@ -1,0 +1,227 @@
+﻿#dynamicCollapsible .ui-btn-text
+{
+    text-shadow: none !important;
+    color: black !important;
+}
+
+#dynamicCollapsible a
+{
+    text-decoration: none !important;
+}
+
+#dynamicCollapsible
+{
+    background-color: #c6def9;
+}
+
+/*.collapsibleUl
+            {
+                background: #ffffff;
+            }*/
+
+.boldFont
+{
+    color: #174274;
+}
+
+.lable
+{
+    color: #466180;
+}
+
+.ui-bar-f
+{
+    background: #c7defa; /*height: auto;             color: White;*/
+    text-shadow: none;
+    border: 0px;
+}
+.ui-br
+{
+    border-style: none;
+}
+
+.startImage
+{
+    float:right;
+    text-align: right;
+    margin-top: 0%;
+    /*position:absolute;
+    right:5px;*/
+}
+
+.editCapital
+{
+    float:right;
+    position:absolute;
+    margin-top:25px;
+    right:25px;
+}
+
+.completeImage
+{
+    text-align: left;
+    margin-top: 0%;
+}
+
+.rateAllImage
+{
+    text-align: left;
+    margin-top: 0%;
+}
+/* .collapsibleBackground
+            {
+                background-color:White;
+            }*/
+
+
+#pieChartController .ui-select
+{
+    width: 100% !important;
+}
+
+/***************************************************************************************************************/
+
+.pageHeader
+{
+    text-align: center;
+    font-weight: bold;
+}
+
+.breadCrumbLink
+{
+    color: #0000c5;
+}
+
+/****************************Add WO Screen*********************************************/
+#level1ValueLabel
+{
+    font-weight: bold;
+}
+
+.mandatory
+{
+    color: Red;
+}
+
+#imageDiv
+{
+    text-align: right;
+    right: 2%;
+}
+
+/*******************************************************Inspection items screen ************************************/
+
+a .createWO .ui-icon
+{
+    width: 32px;
+    height: 32px;
+}
+
+
+.ui-icon-custom
+{    
+    background-position: 13px -3px;
+    background-size: 70%;
+    width: 32px;
+    height: 32px;
+    background-color: #2F3E46  !important;
+}
+
+/****************************************************************************edit items ***************************************/
+.editScreenButtons
+{
+ /*width:48%;*/
+ margin-right:0px!important;
+ margin-left:0px!important;
+}
+
+#imageContainer
+{
+    text-align:right;
+}
+
+.saveCancel
+{
+    text-align:right;
+}
+
+#saveEditItemImage
+{
+    margin-right:5%;
+}
+
+/***************************Inspection Assets********************************/
+
+ #dynamicAssetList
+        {
+        background-color:#c6def9;
+        color:#174274;
+        font-weight:bold;
+        }
+        
+/********************************Inspection Vendor **********************/
+
+/*#vendorPictureButton
+{
+   float:left;
+   left:2%;
+}*/
+
+.imagePosition
+{
+    margin-top:10%;
+}
+
+.CommentsScrollBar
+{
+    max-height:200px;
+}
+/********************************** New inspection item screen **************************/
+
+.selectItem
+{
+    width: 24px;
+    height: 24px;
+}
+
+.itemRatingIcon
+{
+    width: 24px;
+    height: 24px;
+    margin: 0 2% 0 0;
+}
+
+.itemImpactIcon
+{
+    width: 24px;
+    height: 24px;
+    margin: 0 2% 0 0;
+}
+
+.parentItemDiv
+{
+    position: relative;
+}
+
+.selectItemDiv
+{
+    position: absolute;
+    left: 5px;
+    top: 5%;
+}
+
+.itemRatingDiv
+{
+    float:right;
+}
+
+.itemSaveIcon
+{
+    margin-top:18px;
+}
+
+.tabBarIconText
+{
+    display:block;
+    white-space:normal !important;
+}

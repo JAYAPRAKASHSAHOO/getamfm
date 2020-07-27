@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+<div data-role="page" id="intDispOrderPage" class="custScrolling">
+    <script type="text/javascript">
+        $("#intDispOrderPage").on("pagecreate", function () {
+            try {
+                // Bind all dynamic popups/panels.  Error, Loading, NavPanel (div only), AutoSync Prompt
+                BindFormPopups(this.id);
+            }
+            catch (e) {
+                //log(e);
+            }
+        });
+
+        $("#intDispOrderPage").on("pagebeforeshow", function () {
+            hideShowSync();
+            //**** Call the Translations
+            LoadTranslation('intDispOrderPage', null);
+            //**** End
+        });
+
+        // We will retrieve orders here.
+        $("#intDispOrderPage").on("pageshow", function () {
+            // Hide or show the settings icon
+            configureSettingsButton("settingsIconIntDisp");
+
+			updateBreadcrumb(this.id, true);
+            // IntDisp is online only, because we need to have up to date Rank information from recent coords.
+            if (navigator.onLine) {
+                showLoading();
+                GetOrderList("intDispOrderPage");
+                $('#noIntDispOrder').hide();
+            }
+            else {
+                showError(GetCommonTranslatedValue("NoNetworkCommon"));
+            }
+
+            // Add navigation Panel again?
+            addPanel();
+            // AutoSync check
+            CheckingPendingData();
+            var pageID = $.mobile.activePage.attr('id');
+
+        });
+
+    </script>
+    <div data-role="header" class="page-header" data-position="fixed" style="top:0px!important;" data-tap-toggle="false">
+        <a href="#" data-role="button" class="min-margin-top margin-left ui-btn-left" data-icon="bars" onclick="ShowMenuItems()"
+            data-iconpos="notext">Menu</a><a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+        <a href="#" data-role="button" id = "settingsIconIntDisp" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+            class="min-margin-top margin-right ui-btn-right"></a>
+        <h1>
+        </h1>
+    </div>
+    <div data-role="content"  class="content-container">    
+        <div class="SyncNotification" style="text-align:right;"> 
+            <img class="img-sync" style="vertical-align: middle;"/>Syncing...
+        </div>
+        <p class="ordersPageTitle page-heading">
+            <span id="IntDispOrderTitle"></span>
+        </p>        
+        <ul data-inset="true" data-role="listview" id="noIntDispOrder" style="display: none" class="NoOrders">
+            <li class="no-records" id="NoIntDispOrder">No Work Orders</li>
+        </ul>
+        <div id="intDispOrderWOListDiv" class="WOListDiv data-list" data-role="collapsible-set" data-inset="false">
+        </div>
+    </div>
+</div>
+</body>
+</html>

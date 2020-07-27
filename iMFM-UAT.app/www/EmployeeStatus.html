@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <div data-role="page" id="employeeStatusPage" class="custScrolling">
+            <script type="text/javascript">
+                $("#employeeStatusPage").on("pageinit", function () {
+                });
+
+                $("#employeeStatusPage").on("pagecreate", function () {
+                    try {
+                        BindFormPopups(this.id);
+                    }
+                    catch (e) {
+                    }
+                });
+
+                $("#employeeStatusPage").on("pagebeforeshow", function () {
+                    hideShowSync();
+                    $('#TechStatusHeader').html(GetCommonTranslatedValue('TechStatusHeader'));
+                    $('#availableSlider>[value="available"]').text(GetCommonTranslatedValue('Available'));
+                    $('#availableSlider>[value="unavailable"]').text(GetCommonTranslatedValue('Unavailable'));
+                    $('#availableSlider').next().find('.ui-slider-label-b').text(GetCommonTranslatedValue('Available'));
+                    $('#availableSlider').next().find('.ui-slider-label-a').text(GetCommonTranslatedValue('Unavailable'));
+                    $('#SubmitButton .ui-btn-text').text(GetCommonTranslatedValue('UpdateButton'));
+                    $('#ResetButton .ui-btn-text').text(GetCommonTranslatedValue('CancelLabel'));
+                });
+
+                $("#employeeStatusPage").on("pageshow", function () {
+					updateBreadcrumb(this.id, true);
+                    addPanel();
+                    showLoading();
+                    // Hide or show the settings icon
+                    configureSettingsButton("settingsIconEmpStatus");
+
+                    $.when(Availability.GetEmployeeStatuses()).done(function (statuses) {
+                        showTechStatusPopup(statuses);
+                        closeLoading();
+                    });
+                });
+                </script>
+            <div data-role="header" class="page-header" style="top: 0px!important" data-tap-toggle="false">
+                <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems()" class="ui-btn-left min-margin-top margin-left"
+                    data-iconpos="notext">Menu</a>
+                <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-left ui-btn-left" >Scan</a>
+                <a href="#" data-role="button" id = "settingsIconEmpStatus" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+                <h1>
+                </h1>
+            </div>
+            <div data-role="content" class="content-container">
+                <div class="SyncNotification" style="text-align: right;">
+                    <img class="img-sync" style="vertical-align: middle;" />Syncing...
+                </div>
+                <p class="ordersPageTitle page-heading">
+                    <span id="TechStatusHeader">Demand Orders</span>
+                </p>
+                <div class="techstatus-popup form-content-panel">
+                    <!--<a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" onclick="javascript:closeTechStatusPopup();" style="float:right;position:absolute;top:-15px;right:-10px;" data-iconpos="notext" id="TechStatusTopClose"></a>-->
+                    <select id="availableSlider" class="fullscreen-slider" data-reason="techStatus" style="width:100%" data-role="slider" onchange="showTechStatusReason(this);">
+                        <option value="available">('Available')</option>
+                        <option value="unavailable">('Unavailable')</option></select>
+                    <div id="techStatusPane"><select id="techStatus"></select></div>
+                    
+                    <div class="button-panel">
+                        <div class="float-left">
+                            <a href="#" id="SubmitButton" class="primary-button" data-role="button" onclick="saveTechStatus('techStatus');">UpdateButton</a>
+                        </div>
+                        <div class="float-right">
+                            <a href="#" id="ResetButton" class="secondary-button" data-role="button" onclick="javascript:closeTechStatusPopup();" >CancelButton</a>
+                        </div>
+                    </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,198 @@
+﻿<div data-role="page" id="TimeCardEntry" class="custScrolling">
+    <script type="text/javascript">
+        var timeCardEntryPageID = "TimeCardEntry";
+        var timeCardEntryPage = $("#" + timeCardEntryPageID);
+        var timeCardEntry = [];
+
+        var timeCardEntryCollapsible = timeCardEntryPage.find("#TimeCardEntryCollapsible");
+        var entryDiv = timeCardEntryPage.find("#EntryDiv");
+        var editDiv = timeCardEntryPage.find("#EditDiv");
+        var indexHidden = timeCardEntryPage.find("#IndexHidden");
+        var timeCardDetailNumberHidden = timeCardEntryPage.find("#TimeCardDetailNumberHidden");
+        var editTimeCardLabel = timeCardEntryPage.find("#EditTimeCardLabel");
+        var dateLink = timeCardEntryPage.find("#DateLink");
+        var dateTextBox = timeCardEntryPage.find("#DateTextBox");
+        var timeInTextBox = timeCardEntryPage.find("#TimeInTextBox");
+        var mealOutTextBox = timeCardEntryPage.find("#MealOutTextBox");
+        var mealInTextBox = timeCardEntryPage.find("#MealInTextBox");
+        var timeOutTextBox = timeCardEntryPage.find("#TimeOutTextBox");
+        var calculatedHoursValueLabel = timeCardEntryPage.find("#CalculatedHoursValueLabel");
+
+        var defaultDate = "1900-01-01";
+        var defaultTime = "12:00";
+        var isEntryVisible = true;
+        var isCreateMode = true;
+        var deleteIndex = null;
+        var addWOButtonVisible = true;
+        var addWOButtonEnabled = true;
+        var addNAButtonVisible = true;
+        var addNAButtonEnabled = true;
+        var deleteButtonVisible = true;
+        var deleteButtonEnabled = true;
+
+        var addTimeCardHeaderTranslation;
+        var editTimeCardHeaderTranslation;
+        var noTimeCardEntryTranslation;
+        var timeInTranslation;
+        var mealOutTranslation;
+        var mealInTranslation;
+        var timeOutTranslation;
+        var actionFailedTranslation;
+        var requiredFieldTranslation;
+        var invalidDate1Translation;
+        var invalidDate2Translation;
+        var invalidDate3Translation;
+        var noNetworkTranslation;
+        var invalidHoursTranslation;
+        var negativeHoursTranslation;
+        var laterThanTranslation;
+        var overallTranslation;
+        var hoursTranslation;
+        var nonAppTranslation;
+        var driveHoursTranslation;
+
+        timeCardEntryPage.on("pagecreate", function () {
+            BindFormPopups(timeCardEntryPageID);
+        });
+
+        timeCardEntryPage.on("pagebeforeshow", function () {
+            hideShowSync();
+        });
+
+        timeCardEntryPage.on("pageshow", function () {
+            // Hide or show the settings icon
+            configureSettingsButton("settingsIconTcEntry");
+
+			updateBreadcrumb(this.id);
+            addPanel();
+            CheckingPendingData();
+            showActionPopupLoading();
+            $.GetOnlineSecuritySubTokens(400029, 2, TimeCardEntryPageSecurity);
+        });
+
+        timeCardEntryPage.on('swipeleft', function () {
+            if (isEntryVisible) {
+                CreateTimeCardEntry();
+            }
+        });
+
+        timeCardEntryPage.on('swiperight', function () {
+            if (!isEntryVisible) {
+                timeCardEntryCollapsible.children().trigger("collapse");
+                ShowEntries();
+            }
+        });     
+    </script>
+    <div data-role="header" class="page-header" data-position="fixed" style="top: 0px!important" data-tap-toggle="false">
+        <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left min-margin-top margin-left">
+            <a href="#" data-role="button" data-icon="bars" onclick="ShowMenuItems();" data-iconpos="notext">
+            </a><a id="A1" data-role="button" data-icon="arrow-l" onclick="navigateToPreviousPage();"
+                data-iconpos="notext"></a>
+        </div>
+        <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left shortcut-margin-top ui-btn-left" >Scan</a>
+        <a href="#" data-role="button" id = "settingsIconTcEntry" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+        <span class="ui-title"></span>
+    </div>
+    <div id="ContentDiv" data-role="content" class="content-container">
+        <p class="page-heading">
+            <label id="TimeCardEntryHeaderLabel">
+            </label>
+        </p>
+        <p class="sub-header">
+            <label id="TimeCardEntrySubHeaderLabel">
+            </label>
+        </p>
+        <div class="ui-grid-a">
+            <div id="EntryDiv" class="ui-block-a" style="width: 100%; position: absolute;">
+                <div id="TimeCardEntryCollapsible" data-role="collapsible-set" class="data-list inspection-list">
+                </div>
+            </div>
+            <div id="EditDiv" class="ui-block-b" style="width: 100%; position: absolute; display: none">
+                <input type="hidden" id="IndexHidden" />
+                <input type="hidden" id="TimeCardDetailNumberHidden" />
+                <p>
+                    <strong>
+                        <label id="EditTimeCardLabel">
+                        </label>
+                    </strong>
+                </p>
+                <div id="TimeCardSummaryTable">
+                    
+                        <div id="DateRow">
+                            <div>
+                                <label id="DateMandatoryLabel" style="color: Red;">
+                                    *</label>
+                                <label id="DateLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <input type="date" id="DateTextBox" />
+                            </div>
+                        </div>
+                        <div id="TimeInRow">
+                            <div>
+                                <label id="TimeInMandatoryLabel" style="color: Red;">
+                                    *</label>
+                                <label id="TimeInLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <input id="TimeInTextBox" type="time" onchange="TimeCardEntry_UpdateHours();" />
+                            </div>
+                        </div>
+                        <div id="MealOutRow">
+                            <div>
+                                <label id="MealOutLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <input id="MealOutTextBox" type="time" onchange="TimeCardEntry_UpdateHours();" />
+                            </div>
+                        </div>
+                        <div id="MealInRow">
+                            <div>
+                                <label id="MealInLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <input id="MealInTextBox" type="time" onchange="TimeCardEntry_UpdateHours();" />
+                            </div>
+                        </div>
+                        <div id="TimeOutRow">
+                            <div>
+                                <label id="TimeOutMandatoryLabel" style="color: Red;">
+                                    *</label>
+                                <label id="TimeOutLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <input id="TimeOutTextBox" type="time" onchange="TimeCardEntry_UpdateHours();" />
+                            </div>
+                        </div>
+                        <div id="CalculatedHoursRow">
+                            <div>
+                                <label id="CalculatedHoursLabel">
+                                </label>
+                                :
+                            </div>
+                            <div>
+                                <label id="CalculatedHoursValueLabel">
+                                </label>
+                            </div>
+                        </div>
+                    
+                </div>
+                <a data-role="button" id="TimeCardEntry_SaveButton" data-theme="b" onclick="SaveTimeCardEntry();"
+                    data-inline='true' style="width: 45%"></a><a data-role="button" id="TimeCardEntry_ResetButton"
+                        data-theme="b" onclick="ResetButtonClick();" data-inline="true" style="width: 45%">
+                    </a>
+            </div>
+        </div>
+    </div>
+</div>

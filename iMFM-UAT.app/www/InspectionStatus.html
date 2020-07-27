@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="css/InspectionStyle.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div data-role="page" id="InspStatusPage" class="custScrolling">
+        <style>
+            #pieLabel0
+            {
+                top: 10% !important;
+            }
+            #pieLabel1
+            {
+                top: 85% !important;
+            }
+        </style>
+        <script type="text/javascript">           
+            
+            $('#InspStatusPage').on('pageinit', function () {
+                LoadTranslation("InspStatusPage", InspStatusPageBindDropdown);
+                var newDate = new Date();
+                var todate = new Date(newDate.getFullYear(), newDate.getMonth(), newDate.getDate());
+                var mnthStartDate = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+                var yrStartdate = new Date(newDate.getFullYear(), 0, 1);
+                var data = iMFMJsonObject({
+                    toDate: todate.toLocaleDateString(),
+                    yearDate: yrStartdate.toLocaleDateString(),
+                    monthDate: mnthStartDate.toLocaleDateString(),
+                    "Username": decryptStr(localStorage.getItem("Username"))                    
+                });
+                var statusURL = standardAddress + "Inspection.ashx?methodname=GetInspCount";
+                InspectionStatusSuccess(statusURL, data);
+            });
+
+            $("#InspStatusPage").on("pagecreate", function () {
+                BindFormPopups(this.id);
+            });
+
+            $("#InspStatusPage").on("pagebeforeshow", function () {
+                hideShowSync();
+                LoadTranslation("InspStatusPage", InspStatusPageBindDropdown);
+            });
+
+            $("#InspStatusPage").on("pageshow", function () {
+                // Hide or show the settings icon
+                configureSettingsButton("settingsIconInspStatus");
+
+				updateBreadcrumb(this.id);
+                CheckingPendingData();         
+                addPanel();
+            });
+
+        </script>
+        <div data-role="header" data-position="fixed" style="top: 0px!important" class="page-header" data-tap-toggle="false">
+            <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="ui-btn-left margin-left min-margin-top">
+                <a href="javascript:ShowMenuItems()" data-role="button" data-icon="bars" data-iconpos="notext">
+                    Menu</a> <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext"
+                        onclick="navigateToPreviousPage();">back</a>
+            </div>
+            <a href="#" onclick="NavigateToWorkOrderPage(this.name)" id="shortcut400039" data-role="button" data-iconpos="notext" name="400039" class="shortcut shortcut-controlgroup-left ui-btn-left shortcut-margin-top" >Scan</a>
+            <a href="#" data-role="button" id = "settingsIconInspStatus" data-icon="gear" data-iconpos="notext" onclick="LoginSettings_OpenPopUp();"
+                    class="min-margin-top margin-right ui-btn-right"></a>
+            <h1>
+            </h1>
+        </div>
+        <div data-role="content" class="content-container">
+        <div class="SyncNotification" style="text-align:right;"> 
+            <img class="img-sync" style="vertical-align: middle;"/>Syncing...
+        </div>
+            <p id="inspectionStatusHeader" class="page-heading">
+                <!--<span id="divisionDescription">-->
+                Inspection Status<!--</span>-->
+            </p>
+            <div id="noGraph">
+            </div>
+            <div id="graph1" class="graph" style="height: 300px; width: 100%; text-shadow: none;">
+            </div>
+            <div data-role="fieldcontain" id="pieChartController" class="min-padding-left">
+                <label for="inspectionPercentage" id="inspStatusDDLabel">
+                    Inspection For:</label><br />
+                <select name="inspectionPercentage" id="inspectionPercentage" data-iconpos="right"
+                    onchange="changeChartData();">
+                    <option value="0">Current Month</option>
+                    <option value="1">Year To Date</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
